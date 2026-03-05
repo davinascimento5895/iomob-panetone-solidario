@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 97%;
+    --foreground: 220 30% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 15%;
+
+    --primary: 220 60% 25%;
+    --primary-foreground: 40 33% 97%;
+
+    --secondary: 38 80% 55%;
+    --secondary-foreground: 220 30% 15%;
+
+    --muted: 40 20% 92%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 38 80% 55%;
+    --accent-foreground: 220 30% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 220 60% 25%;
+
+    --radius: 0.75rem;
+
+    --gold: 38 80% 55%;
+    --gold-light: 40 70% 75%;
+    --gold-dark: 35 85% 40%;
+    --navy: 220 60% 25%;
+    --navy-light: 220 40% 40%;
+    --navy-dark: 220 70% 15%;
+    --cream: 40 33% 97%;
+    --cream-dark: 40 20% 92%;
+    --warm-white: 40 50% 99%;
+
+    --sidebar-background: 220 60% 25%;
+    --sidebar-foreground: 40 33% 97%;
+    --sidebar-primary: 38 80% 55%;
+    --sidebar-primary-foreground: 220 30% 15%;
+    --sidebar-accent: 220 40% 35%;
+    --sidebar-accent-foreground: 40 33% 97%;
+    --sidebar-border: 220 50% 30%;
+    --sidebar-ring: 38 80% 55%;
+    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  }
+
+  .dark {
+    --background: 220 30% 8%;
+    --foreground: 40 33% 95%;
+
+    --card: 220 30% 12%;
+    --card-foreground: 40 33% 95%;
+
+    --popover: 220 30% 12%;
+    --popover-foreground: 40 33% 95%;
+
+    --primary: 38 80% 55%;
+    --primary-foreground: 220 30% 10%;
+
+    --secondary: 220 40% 20%;
+    --secondary-foreground: 40 33% 95%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 40 15% 60%;
+
+    --accent: 38 70% 45%;
+    --accent-foreground: 40 33% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 38 80% 55%;
+    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .font-sans {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .gradient-gold {
+    background: hsl(var(--gold));
+  }
+
+  .gradient-navy {
+    background: hsl(var(--navy));
+  }
+
+  .gradient-hero {
+    background: hsl(var(--navy-dark));
+  }
+
+  .text-gradient-gold {
+    color: hsl(var(--gold));
+  }
+
+  .shadow-gold {
+    box-shadow: 0 10px 40px -10px hsl(38 80% 55% / 0.2);
+  }
+
+  .shadow-elegant {
+    box-shadow: 0 20px 60px -15px hsl(220 60% 25% / 0.15);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
