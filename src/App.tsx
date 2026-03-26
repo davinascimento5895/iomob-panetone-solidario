@@ -29,7 +29,13 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!mounted) return;
         setStatus(session ? "ok" : "redirect");
+      }).catch(() => {
+        // If there's an error, redirect to login
+        if (mounted) setStatus("redirect");
       });
+    }).catch(() => {
+      // If there's an error importing, redirect to login
+      if (mounted) setStatus("redirect");
     });
 
     return () => {
@@ -120,9 +126,7 @@ const AppLayout = () => {
             element={
               <QueryClientProvider client={queryClient}>
                 <ProductProvider>
-                  <CartProvider>
-                    <AuthenticatedLayout />
-                  </CartProvider>
+                  <AuthenticatedLayout />
                 </ProductProvider>
               </QueryClientProvider>
             }
@@ -160,9 +164,14 @@ const App = () => (
       <Suspense fallback={null}>
         <SonnerToaster />
       </Suspense>
-      <BrowserRouter>
-        <AppLayout />
-      </BrowserRouter>
+      <CartProvider>
+        <BrowserRouter future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}>
+          <AppLayout />
+        </BrowserRouter>
+      </CartProvider>
     </TooltipProviderLazy>
   </Suspense>
 );

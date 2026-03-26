@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Heart } from "lucide-react";
 import heroJpg from "@/assets/hero-panettone.jpg";
@@ -13,29 +12,6 @@ import heroWebp1024 from "@/assets/hero-panettone-1024.webp";
 import heroWebp1600 from "@/assets/hero-panettone-1600.webp";
 
 const HeroSection = () => {
-  useEffect(() => {
-    try {
-      const l = document.createElement("link");
-      l.rel = "preload";
-      l.as = "image";
-      l.type = "image/avif";
-      l.href = heroAvif1600;
-      l.setAttribute('fetchpriority', 'high');
-      // allow cross-origin if the image is served from CDN
-      l.crossOrigin = "anonymous";
-      document.head.appendChild(l);
-      return () => {
-        try {
-          document.head.removeChild(l);
-        } catch (e) {
-          /* ignore */
-        }
-      };
-    } catch (e) {
-      // safe fallback: do nothing
-    }
-  }, []);
-
   return (
     <section className="py-12 bg-navy-dark text-cream">
       <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-6">

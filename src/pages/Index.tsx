@@ -29,7 +29,13 @@ const Index = () => {
         } else {
           setChecking(false);
         }
+      }).catch(() => {
+        // If there's an error getting session, just show the landing page
+        if (mounted) setChecking(false);
       });
+    }).catch(() => {
+      // If there's an error importing supabase, just show the landing page
+      if (mounted) setChecking(false);
     });
     return () => {
       mounted = false;
