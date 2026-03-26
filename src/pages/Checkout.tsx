@@ -233,10 +233,10 @@ const Checkout = () => {
 
       {/* Fixed bottom action: show total on left, actions on right */}
       <div className="sticky bottom-0 z-40 bg-card border-t border-border p-3 safe-area-bottom">
-        <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
-          <div className="flex flex-col">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-3 h-14 px-2">
+          <div className="flex flex-col justify-center items-start">
             <span className="text-xs text-muted-foreground">Total</span>
-            <span className="text-lg font-bold text-foreground">{fmt(finalTotal)}</span>
+            <span className="text-lg md:text-xl font-bold text-foreground">{fmt(finalTotal)}</span>
           </div>
 
           <div className="flex items-center gap-2">
