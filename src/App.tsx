@@ -101,7 +101,7 @@ const App = () => (
         <CartProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter basename="/panetonesolidario">
+          <BrowserRouter>
             <AppLayout />
           </BrowserRouter>
         </CartProvider>
