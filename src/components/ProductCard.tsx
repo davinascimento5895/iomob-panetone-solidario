@@ -30,7 +30,7 @@ const ProductCard = ({ id, name, description, price, priceUnit, image, weight, a
   };
 
   return (
-    <div className="bg-card rounded-md overflow-hidden border border-border/50 flex flex-col h-full">
+    <div className="bg-card rounded-xl overflow-hidden border border-border/50 flex flex-col h-full shadow-sm hover:shadow-md transition-shadow">
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         {imgError || !image || image === "/placeholder.svg" ? (
           <div className="w-full h-full flex items-center justify-center bg-muted">

@@ -47,8 +47,36 @@ const Login = () => {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+
+        // Obter sessão/usuário atual e checar papéis na tabela `user_roles`.
+        const { data: { session } } = await supabase.auth.getSession();
+
         toast.success("Login realizado com sucesso!");
-        navigate(redirect);
+
+        try {
+          const userId = session?.user?.id;
+          if (userId) {
+            const { data: roles } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", userId);
+
+            const roleList = Array.isArray(roles) ? roles.map((r: any) => r.role) : [];
+
+            if (roleList.includes("admin")) {
+              navigate("/admin", { replace: true });
+            } else if (roleList.includes("moderator") || roleList.includes("moderador")) {
+              navigate("/moderator", { replace: true });
+            } else {
+              navigate(redirect);
+            }
+          } else {
+            navigate(redirect);
+          }
+        } catch (e) {
+          // falha ao checar role: seguir com redirect padrão
+          navigate(redirect);
+        }
       }
     } catch (err: any) {
       toast.error("Não foi possível autenticar. Verifique seus dados e tente novamente.");

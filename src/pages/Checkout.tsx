@@ -231,32 +231,41 @@ const Checkout = () => {
         )}
       </div>
 
-      {/* Fixed bottom action */}
+      {/* Fixed bottom action: show total on left, actions on right */}
       <div className="sticky bottom-0 z-40 bg-card border-t border-border p-3 safe-area-bottom">
-        <div className="max-w-lg mx-auto flex items-center gap-2">
-          {step > 0 && (
-            <Button variant="outline" className="flex-shrink-0 rounded-xl" onClick={() => setStep(step - 1)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          {step < 3 ? (
-            <Button
-              className="flex-1 bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl h-11"
-              disabled={!canAdvance()}
-              onClick={() => setStep(step + 1)}
-            >
-              Continuar <ArrowRight className="h-4 w-4 ml-1.5" />
-            </Button>
-          ) : (
-            <Button
-              className="flex-1 bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl h-11"
-              disabled={submitting}
-              onClick={handleSubmit}
-            >
-              <ClipboardCheck className="h-4 w-4 mr-1.5" />
-              {submitting ? "Processando..." : "Confirmar Pedido"}
-            </Button>
-          )}
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Total</span>
+            <span className="text-lg font-bold text-foreground">{fmt(finalTotal)}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {step > 0 && (
+              <Button variant="outline" size="lg" className="rounded-xl" onClick={() => setStep(step - 1)}>
+                Voltar
+              </Button>
+            )}
+            {step < 3 ? (
+              <Button
+                size="lg"
+                className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl"
+                disabled={!canAdvance()}
+                onClick={() => setStep(step + 1)}
+              >
+                Continuar <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl"
+                disabled={submitting}
+                onClick={handleSubmit}
+              >
+                <ClipboardCheck className="h-4 w-4 mr-2" />
+                {submitting ? "Processando..." : "Confirmar Pedido"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

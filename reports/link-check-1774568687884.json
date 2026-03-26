@@ -1,0 +1,78 @@
+{
+  "baseUrl": "http://localhost:8082",
+  "timestamp": 1774568687884,
+  "total": 7,
+  "brokenCount": 0,
+  "results": [
+    {
+      "href": "http://localhost:8082/",
+      "status": 200,
+      "ok": true,
+      "reason": null,
+      "origin": "http://localhost:8082",
+      "type": "internal",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "href": "http://localhost:8082/login",
+      "status": 200,
+      "ok": true,
+      "reason": null,
+      "origin": "http://localhost:8082",
+      "type": "internal",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "href": "http://localhost:8082/app/produtos",
+      "status": 200,
+      "ok": true,
+      "reason": null,
+      "origin": "http://localhost:8082",
+      "type": "internal",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "href": "http://localhost:8082/produtos",
+      "status": 200,
+      "ok": true,
+      "reason": null,
+      "origin": "http://localhost:8082",
+      "type": "internal",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "href": "http://localhost:8082/app/carrinho",
+      "status": 200,
+      "ok": true,
+      "reason": null,
+      "origin": "http://localhost:8082",
+      "type": "internal",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "href": "https://api.whatsapp.com/send?phone=5541987903434&text=Ol%C3%A1,%20preciso%20de%20ajuda%20com%20o%20RotaryConnect",
+      "status": 200,
+      "ok": true,
+      "reason": null,
+      "origin": "https://api.whatsapp.com",
+      "type": "external",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "href": "http://localhost:8082/#contato",
+      "status": 200,
+      "ok": true,
+      "reason": null,
+      "origin": "http://localhost:8082",
+      "type": "internal",
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import { CartProvider } from "./contexts/CartContext";
 const Navbar = lazy(() => import("./components/Navbar"));
 const Footer = lazy(() => import("./components/Footer"));
 import AdminRoute from "./components/AdminRoute";
+import ModeratorRoute from "./components/ModeratorRoute";
 // Authenticated layout and app pages are lazy-loaded to avoid
 // bundling the entire authenticated area into the initial chunk.
 const AuthenticatedLayout = lazy(() => import("./components/AuthenticatedLayout"));
@@ -59,6 +60,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Moderator = lazy(() => import("./pages/Moderator"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Produtos = lazy(() => import("./pages/Produtos"));
@@ -80,8 +82,9 @@ const PageLoader = () => (
 const AppLayout = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
+  const isModerator = location.pathname.startsWith("/moderator");
   const isApp = location.pathname.startsWith("/app");
-  const hideChrome = isAdmin || isApp || location.pathname === "/checkout";
+  const hideChrome = isAdmin || isApp || isModerator || location.pathname === "/checkout";
 
   return (
     <>
@@ -103,9 +106,11 @@ const AppLayout = () => {
             path="/checkout"
             element={
               <QueryClientProvider client={queryClient}>
-                <RequireAuth>
-                  <Checkout />
-                </RequireAuth>
+                <ProductProvider>
+                  <RequireAuth>
+                    <Checkout />
+                  </RequireAuth>
+                </ProductProvider>
               </QueryClientProvider>
             }
           />
@@ -116,6 +121,17 @@ const AppLayout = () => {
                 <AdminRoute>
                   <Admin />
                 </AdminRoute>
+              </QueryClientProvider>
+            }
+          />
+
+          <Route
+            path="/moderator"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <ModeratorRoute>
+                  <Moderator />
+                </ModeratorRoute>
               </QueryClientProvider>
             }
           />
