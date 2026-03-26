@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
+import { inspect } from 'util';
 
 async function run() {
   const timestamp = Date.now();
@@ -19,20 +20,97 @@ async function run() {
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
 
+  // Inject performance observers early to capture LCP/FCP/CLS
+  await page.addInitScript(() => {
+    try {
+      // collect LCP
+      (function () {
+        const perf = (window.__perf = window.__perf || {});
+        try {
+          const po = new PerformanceObserver((entryList) => {
+            for (const entry of entryList.getEntries()) {
+              if (entry.entryType === 'largest-contentful-paint') {
+                perf.lcp = Math.max(perf.lcp || 0, entry.startTime || 0);
+              }
+            }
+          });
+          po.observe({ type: 'largest-contentful-paint', buffered: true });
+        } catch (e) {
+          // ignore
+        }
+
+        // capture CLS
+        try {
+          let cls = 0;
+          const po2 = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (!entry.hadRecentInput) cls += entry.value || 0;
+            }
+            perf.cls = cls;
+          });
+          po2.observe({ type: 'layout-shift', buffered: true });
+        } catch (e) {}
+
+        // On load capture navigation and paint timings
+        window.addEventListener('load', () => {
+          try {
+            const nav = performance.getEntriesByType('navigation')[0];
+            const paints = performance.getEntriesByType('paint');
+            perf.navigation = nav ? {
+              domInteractive: nav.domInteractive,
+              domContentLoaded: nav.domContentLoadedEventEnd,
+              loadEventEnd: nav.loadEventEnd,
+              ttfb: nav.responseStart - nav.requestStart
+            } : {};
+            perf.paints = {};
+            for (const p of paints) perf.paints[p.name] = p.startTime;
+            // ensure LCP is present (some browsers report buffered entries)
+            const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
+            if (lcpEntries && lcpEntries.length) {
+              perf.lcp = Math.max(perf.lcp || 0, ...lcpEntries.map(e => e.startTime || 0));
+            }
+          } catch (e) {
+            // ignore
+          }
+        });
+      })();
+    } catch (e) {
+      // ignore
+    }
+  });
+
+  // First measure the landing page
+  console.log('[playwright] -> Abrindo / (landing)');
+  await page.goto('http://localhost:8081/', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(800);
+  const landingPerf = await page.evaluate(() => window.__perf || {});
+  fs.writeFileSync(path.join(desktopDir, `metrics-landing-${timestamp}.json`), JSON.stringify(landingPerf, null, 2));
+  console.log('[playwright] -> Landing metrics salvo');
+
   console.log('[playwright] -> Abrindo /login');
   await page.goto('http://localhost:8081/login', { waitUntil: 'networkidle' });
-
-  // Criar conta (modo sign-up)
+  // Criar conta (modo sign-up) - try to toggle signup UI if needed
   try {
-    await page.locator('text=Não tem conta? Cadastre-se').click({ timeout: 3000 });
+    // if name field not present, try to toggle sign-up
+    const nameExists = await page.locator('#name').count();
+    if (!nameExists) {
+      const toggle = page.locator('text=Não tem conta? Cadastre-se');
+      if ((await toggle.count()) > 0) {
+        await toggle.click({ timeout: 3000 }).catch(() => {});
+        // wait a bit for UI
+        await page.waitForTimeout(400);
+      }
+    }
   } catch (e) {
-    // já pode estar no modo cadastro
+    // ignore
   }
+
   const email = `autotest+${timestamp}@example.com`;
-  await page.fill('#name', 'Autotest Playwright');
-  await page.fill('#phone', '(11) 99999-0000');
-  await page.fill('#email', email);
-  await page.fill('#password', 'SenhaTeste123');
+  // Fill fields only if present (UI may be in login-only mode)
+  if ((await page.locator('#name').count()) > 0) await page.fill('#name', 'Autotest Playwright');
+  if ((await page.locator('#phone').count()) > 0) await page.fill('#phone', '(11) 99999-0000');
+  if ((await page.locator('#email').count()) > 0) await page.fill('#email', email);
+  if ((await page.locator('#password').count()) > 0) await page.fill('#password', 'SenhaTeste123');
 
   console.log('[playwright] -> Criando conta e aguardando redirecionamento');
   await Promise.all([

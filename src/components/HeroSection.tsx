@@ -1,9 +1,41 @@
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Heart } from "lucide-react";
-import heroImage from "@/assets/hero-panettone.jpg";
+import heroJpg from "@/assets/hero-panettone.jpg";
+import heroAvif480 from "@/assets/hero-panettone-480.avif";
+import heroAvif768 from "@/assets/hero-panettone-768.avif";
+import heroAvif1024 from "@/assets/hero-panettone-1024.avif";
+import heroAvif1600 from "@/assets/hero-panettone-1600.avif";
+import heroWebp480 from "@/assets/hero-panettone-480.webp";
+import heroWebp768 from "@/assets/hero-panettone-768.webp";
+import heroWebp1024 from "@/assets/hero-panettone-1024.webp";
+import heroWebp1600 from "@/assets/hero-panettone-1600.webp";
 
 const HeroSection = () => {
+  useEffect(() => {
+    try {
+      const l = document.createElement("link");
+      l.rel = "preload";
+      l.as = "image";
+      l.type = "image/avif";
+      l.href = heroAvif1600;
+      l.setAttribute('fetchpriority', 'high');
+      // allow cross-origin if the image is served from CDN
+      l.crossOrigin = "anonymous";
+      document.head.appendChild(l);
+      return () => {
+        try {
+          document.head.removeChild(l);
+        } catch (e) {
+          /* ignore */
+        }
+      };
+    } catch (e) {
+      // safe fallback: do nothing
+    }
+  }, []);
+
   return (
     <section className="py-12 bg-navy-dark text-cream">
       <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-6">
@@ -25,7 +57,25 @@ const HeroSection = () => {
         </div>
 
         <div className="w-full lg:w-1/2">
-          <img src={heroImage} alt="Panetone" loading="lazy" className="w-full h-44 object-cover rounded-md" />
+          <picture>
+            <source
+              type="image/avif"
+              srcSet={`${heroAvif480} 480w, ${heroAvif768} 768w, ${heroAvif1024} 1024w, ${heroAvif1600} 1600w`}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <source
+              type="image/webp"
+              srcSet={`${heroWebp480} 480w, ${heroWebp768} 768w, ${heroWebp1024} 1024w, ${heroWebp1600} 1600w`}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <img
+              src={heroJpg}
+              alt="Panetone"
+              decoding="async"
+              fetchpriority="high"
+              className="w-full h-44 object-cover rounded-md"
+            />
+          </picture>
         </div>
       </div>
     </section>

@@ -1,0 +1,9 @@
+{
+  "navigation": {
+    "domInteractive": 42,
+    "domContentLoaded": 190.0999999642372,
+    "loadEventEnd": 0,
+    "ttfb": 2
+  },
+  "paints": {}
+}

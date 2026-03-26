@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import HeroSection from "@/components/HeroSection";
+import { ProductProvider } from "@/contexts/ProductContext";
 
 const AboutSection = lazy(() => import("@/components/AboutSection"));
 const ProductsSection = lazy(() => import("@/components/ProductsSection"));
@@ -19,13 +19,21 @@ const Index = () => {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/app/produtos", { replace: true });
-      } else {
-        setChecking(false);
-      }
+    let mounted = true;
+    // dynamically import supabase so the landing page chunk stays small
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!mounted) return;
+        if (session) {
+          navigate("/app/produtos", { replace: true });
+        } else {
+          setChecking(false);
+        }
+      });
     });
+    return () => {
+      mounted = false;
+    };
   }, [navigate]);
 
   // Rola para a seção correta quando navega com hash de outra página
@@ -54,9 +62,11 @@ const Index = () => {
       <Suspense fallback={<SectionLoader />}>
         <AboutSection />
       </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <ProductsSection />
-      </Suspense>
+      <ProductProvider>
+        <Suspense fallback={<SectionLoader />}>
+          <ProductsSection />
+        </Suspense>
+      </ProductProvider>
       <Suspense fallback={<SectionLoader />}>
         <FAQSection />
       </Suspense>

@@ -1,16 +1,21 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { runWhenIdle } from "@/lib/deferThirdParty";
+// UI providers/components are lazy-loaded so they don't bloat the initial bundle
+const Toaster = lazy(() => import("@/components/ui/toaster").then((m) => ({ default: m.Toaster })));
+const SonnerToaster = lazy(() => import("@/components/ui/sonner").then((m) => ({ default: m.Toaster })));
+const TooltipProviderLazy = lazy(() => import("@/components/ui/tooltip").then((m) => ({ default: m.TooltipProvider })));
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ProductProvider } from "./contexts/ProductContext";
 import { CartProvider } from "./contexts/CartContext";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+const Navbar = lazy(() => import("./components/Navbar"));
+const Footer = lazy(() => import("./components/Footer"));
 import AdminRoute from "./components/AdminRoute";
-import AuthenticatedLayout from "./components/AuthenticatedLayout";
-import { supabase } from "./integrations/supabase/client";
+// Authenticated layout and app pages are lazy-loaded to avoid
+// bundling the entire authenticated area into the initial chunk.
+const AuthenticatedLayout = lazy(() => import("./components/AuthenticatedLayout"));
+// Supabase client is imported dynamically inside auth checks to avoid
+// adding it to the initial client bundle.
 
 // Protege qualquer rota — redireciona para /login se não autenticado
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
@@ -18,9 +23,18 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setStatus(session ? "ok" : "redirect");
+    let mounted = true;
+    // dynamic import to avoid loading supabase in the initial bundle
+    import("./integrations/supabase/client").then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!mounted) return;
+        setStatus(session ? "ok" : "redirect");
+      });
     });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (status === "loading") {
@@ -43,11 +57,11 @@ const Checkout = lazy(() => import("./pages/Checkout"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Produtos = lazy(() => import("./pages/Produtos"));
 
-// App (authenticated) pages - eagerly loaded for instant navigation
-import AppProdutos from "./pages/AppProdutos";
-import AppCarrinho from "./pages/AppCarrinho";
-import AppPedidos from "./pages/AppPedidos";
-import AppConfig from "./pages/AppConfig";
+// App (authenticated) pages - lazy-loaded to keep initial bundle small
+const AppProdutos = lazy(() => import("./pages/AppProdutos"));
+const AppCarrinho = lazy(() => import("./pages/AppCarrinho"));
+const AppPedidos = lazy(() => import("./pages/AppPedidos"));
+const AppConfig = lazy(() => import("./pages/AppConfig"));
 
 const queryClient = new QueryClient();
 
@@ -65,16 +79,54 @@ const AppLayout = () => {
 
   return (
     <>
-      {!hideChrome && <Navbar />}
+      {!hideChrome && (
+        <Suspense fallback={null}>
+          <Navbar />
+        </Suspense>
+      )}
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<><Index /><Footer /></>} />
+          <Route path="/" element={<>
+            <Index />
+            <Suspense fallback={null}>
+              <Footer />
+            </Suspense>
+          </>} />
           <Route path="/login" element={<Login />} />
-          <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
-          <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+          <Route
+            path="/checkout"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <RequireAuth>
+                  <Checkout />
+                </RequireAuth>
+              </QueryClientProvider>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              </QueryClientProvider>
+            }
+          />
 
-          {/* Authenticated area */}
-          <Route path="/app" element={<AuthenticatedLayout />}>
+          {/* Authenticated area - providers mounted only when /app is accessed */}
+          <Route
+            path="/app"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <ProductProvider>
+                  <CartProvider>
+                    <AuthenticatedLayout />
+                  </CartProvider>
+                </ProductProvider>
+              </QueryClientProvider>
+            }
+          >
             <Route index element={<Navigate to="/app/produtos" replace />} />
             <Route path="produtos" element={<AppProdutos />} />
             <Route path="carrinho" element={<AppCarrinho />} />
@@ -83,7 +135,12 @@ const AppLayout = () => {
           </Route>
 
           {/* Legacy redirects */}
-          <Route path="/produtos" element={<><Produtos /><Footer /></>} />
+          <Route path="/produtos" element={<ProductProvider>
+            <Produtos />
+            <Suspense fallback={null}>
+              <Footer />
+            </Suspense>
+          </ProductProvider>} />
           <Route path="/carrinho" element={<Navigate to="/app/carrinho" replace />} />
           <Route path="/meus-pedidos" element={<Navigate to="/app/pedidos" replace />} />
 
@@ -95,19 +152,32 @@ const AppLayout = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ProductProvider>
-        <CartProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppLayout />
-          </BrowserRouter>
-        </CartProvider>
-      </ProductProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <Suspense fallback={null}>
+    <TooltipProviderLazy>
+      <Suspense fallback={null}>
+        <Toaster />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SonnerToaster />
+      </Suspense>
+      <BrowserRouter>
+        <AppLayout />
+      </BrowserRouter>
+    </TooltipProviderLazy>
+  </Suspense>
 );
+
+// Schedule non-critical prefetches during idle to improve later navigations
+try {
+  if (typeof window !== "undefined") {
+    runWhenIdle(() => {
+      // warm up some UI and icon libraries in idle time
+      import("sonner");
+      import("lucide-react");
+    });
+  }
+} catch (e) {
+  // ignore
+}
 
 export default App;
