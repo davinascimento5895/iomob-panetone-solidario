@@ -20,11 +20,11 @@ const StepReview = ({
   fmt,
   totalPrice,
 }: StepReviewProps) => (
-  <div className="space-y-3 animate-fade-in">
+  <div className="space-y-3">
     {cartWarnings.length > 0 && (
-      <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 space-y-1">
+      <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 space-y-1">
         {cartWarnings.map((w, i) => (
-          <p key={i} className="text-xs text-destructive font-medium">⚠️ {w}</p>
+          <p key={i} className="text-xs text-destructive font-medium">{w}</p>
         ))}
       </div>
     )}
@@ -36,7 +36,7 @@ const StepReview = ({
         return (
           <div
             key={item.productId}
-            className={`flex items-center gap-3 bg-card rounded-xl p-3 border ${
+            className={`flex items-center gap-3 bg-card rounded-md p-3 border ${
               overStock ? "border-destructive/50" : "border-border"
             }`}
           >
@@ -77,7 +77,7 @@ const StepReview = ({
       })}
     </div>
 
-    <div className="bg-card rounded-xl p-3 border border-border flex justify-between items-center">
+    <div className="bg-card rounded-md p-3 border border-border flex justify-between items-center">
       <span className="font-display font-bold text-foreground">Total</span>
       <span className="text-lg font-bold text-gold">{fmt(totalPrice)}</span>
     </div>

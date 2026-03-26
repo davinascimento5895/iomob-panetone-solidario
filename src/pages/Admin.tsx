@@ -17,7 +17,7 @@ const Admin = () => {
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <AdminMobileHeader activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <main className="flex-1 md:ml-64 px-4 py-4 md:p-8 pt-18 md:pt-8 bg-background overflow-x-hidden">
+      <main className="flex-1 md:ml-64 px-4 py-4 md:p-6 pt-16 bg-background overflow-x-hidden">
         {activeTab === "dashboard" && <AdminDashboard />}
         {activeTab === "products" && <AdminProducts />}
         {activeTab === "orders" && <AdminOrders />}

@@ -44,10 +44,10 @@ export const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => 
       {tabs.map((tab) => (
         <button
           key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id)}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
             activeTab === tab.id
-              ? "bg-gold/20 text-gold shadow-sm"
+              ? "bg-gold/20 text-gold"
               : "text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5"
           }`}
         >
@@ -116,7 +116,7 @@ export const AdminMobileHeader = ({ activeTab, setActiveTab }: AdminSidebarProps
                   onClick={() => handleSelect(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                     activeTab === tab.id
-                      ? "bg-gold/20 text-gold shadow-sm"
+                      ? "bg-gold/20 text-gold"
                       : "text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5"
                   }`}
                 >

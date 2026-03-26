@@ -8,21 +8,11 @@ const ProductsSection = () => {
   const { products, loading, error, refetch } = useProducts();
 
   return (
-    <section id="produtos" className="py-24 md:py-32 bg-muted/40 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gold/3 rounded-full blur-3xl" />
-
+    <section id="produtos" className="py-12 bg-cream">
       <div className="container mx-auto px-4 relative">
-        <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-          <span className="text-xs font-bold tracking-[0.25em] uppercase text-gold-dark">
-            Nossos Produtos
-          </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight">
-            Escolha o seu <span className="text-gradient-gold">Panetone</span>
-          </h2>
-          <div className="w-16 h-1 bg-gold rounded-full mx-auto" />
-          <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-            Todos os panetones são feitos com ingredientes selecionados e muito carinho.
-          </p>
+        <div className="text-center max-w-2xl mx-auto mb-8">
+          <h2 className="text-2xl font-display font-bold text-foreground">Nossos Produtos</h2>
+          <p className="text-sm text-muted-foreground mt-2">Escolha seu panetone com tranquilidade — sem distrações.</p>
         </div>
 
         {loading && (
@@ -45,7 +35,7 @@ const ProductsSection = () => {
         )}
 
         {!loading && !error && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
             {products.map((product) => (
               <ProductCard
                 key={product.id}
@@ -62,12 +52,9 @@ const ProductsSection = () => {
           </div>
         )}
 
-        <div className="text-center mt-14">
+        <div className="text-center mt-8">
           <Link to="/produtos">
-            <Button
-              variant="outline"
-              className="border-2 border-navy/20 text-navy hover:bg-navy hover:text-white font-semibold rounded-2xl px-10 h-12 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-            >
+            <Button variant="outline" className="border px-6 h-10 rounded-md">
               Ver todos os produtos
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

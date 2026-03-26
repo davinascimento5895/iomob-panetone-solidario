@@ -30,6 +30,18 @@ const AppProdutos = () => {
         </div>
       )}
 
+      {/* Quick cart mini-banner to reduce friction */}
+      {totalItems > 0 && (
+        <div className="mb-4 max-w-6xl mx-auto px-2 sm:px-0">
+          <div className="bg-gold/15 border border-gold/50 text-gold-dark rounded-xl px-4 py-2 text-sm flex items-center justify-between gap-3">
+            <span>Já temos {totalItems} {totalItems === 1 ? "item" : "itens"} no carrinho.</span>
+            <Link to="/checkout" className="font-semibold underline">
+              Ir para checkout
+            </Link>
+          </div>
+        </div>
+      )}
+
       {!loading && !error && (
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-4 max-w-6xl">
           {products.map((product) => (

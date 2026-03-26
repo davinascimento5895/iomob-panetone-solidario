@@ -51,7 +51,7 @@ const Login = () => {
         navigate(redirect);
       }
     } catch (err: any) {
-      toast.error(err.message || "Erro ao autenticar.");
+      toast.error("Não foi possível autenticar. Verifique seus dados e tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -65,9 +65,9 @@ const Login = () => {
       : "Acesse sua conta para fazer seu pedido";
 
   return (
-    <main className="min-h-screen flex items-center justify-center pt-20 pb-12 px-4">
+    <main className="min-h-screen flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
-        <div className="bg-card rounded-2xl p-8 shadow-elegant">
+        <div className="bg-card rounded-lg p-6">
           <div className="text-center mb-6">
             <Link to="/" className="inline-block mb-4">
               <img src={logoRotary} alt="Rotary" className="h-12 mx-auto" />
@@ -147,7 +147,7 @@ const Login = () => {
               </div>
             )}
 
-            <Button type="submit" disabled={loading} className="w-full bg-gold hover:bg-gold-dark text-primary font-semibold">
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? "Aguarde..." : isForgot ? "Enviar link" : isSignUp ? "Criar Conta" : "Entrar"}
             </Button>
           </form>

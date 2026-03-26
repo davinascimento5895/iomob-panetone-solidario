@@ -30,7 +30,7 @@ const ProductCard = ({ id, name, description, price, priceUnit, image, weight, a
   };
 
   return (
-    <div className="bg-card rounded-xl overflow-hidden border border-border/50 shadow-sm flex flex-col h-full">
+    <div className="bg-card rounded-md overflow-hidden border border-border/50 flex flex-col h-full">
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         {imgError || !image || image === "/placeholder.svg" ? (
           <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -93,9 +93,9 @@ const ProductCard = ({ id, name, description, price, priceUnit, image, weight, a
             <button
               onClick={handleAdd}
               disabled={stock <= 0}
-              className="w-full h-9 flex items-center justify-center gap-1 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-10 flex items-center justify-center gap-2 text-sm font-semibold bg-gold text-cream hover:bg-gold-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               Adicionar
             </button>
           )}

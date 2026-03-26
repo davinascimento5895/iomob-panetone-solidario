@@ -131,11 +131,20 @@
   }
 
   .shadow-gold {
-    box-shadow: 0 10px 40px -10px hsl(38 80% 55% / 0.2);
+    box-shadow: none;
   }
 
   .shadow-elegant {
-    box-shadow: 0 20px 60px -15px hsl(220 60% 25% / 0.15);
+    box-shadow: none;
+  }
+
+  /* Remove default Tailwind shadows for a flatter, cleaner UI */
+  .shadow,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl {
+    box-shadow: none !important;
   }
 
   .safe-area-bottom {

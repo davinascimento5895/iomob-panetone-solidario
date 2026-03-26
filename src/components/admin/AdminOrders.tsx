@@ -88,7 +88,7 @@ const AdminOrders = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-orders-all"] }),
     onError: (err) => {
       if (err.message !== "__cancel_dialog__") {
-        toast.error("Erro ao atualizar", { description: err.message });
+        toast.error("Erro ao atualizar pedido. Tente novamente.");
       }
     },
   });
@@ -107,7 +107,7 @@ const AdminOrders = () => {
       toast.success("Pedido cancelado", { description: "Estoque devolvido automaticamente." });
       queryClient.invalidateQueries({ queryKey: ["admin-orders-all"] });
     } catch (err: any) {
-      toast.error("Erro ao cancelar", { description: err.message });
+      toast.error("Erro ao cancelar pedido. Tente novamente.");
     } finally {
       setCancelDialogOpen(false);
       setCancelOrderId(null);

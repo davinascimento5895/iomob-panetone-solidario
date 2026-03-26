@@ -13,7 +13,7 @@ interface StepCharityProps {
 }
 
 const StepCharity = ({ charities, selectedCharity, setSelectedCharity }: StepCharityProps) => (
-  <div className="space-y-2 animate-fade-in">
+  <div className="space-y-2">
     <div className="mb-1">
       <p className="text-xs font-bold text-foreground uppercase tracking-wide">Beneficie uma instituição</p>
       <p className="text-xs text-muted-foreground mt-0.5">Opcional — escolha se desejar apoiar uma causa</p>
@@ -21,7 +21,7 @@ const StepCharity = ({ charities, selectedCharity, setSelectedCharity }: StepCha
 
     <button
       onClick={() => setSelectedCharity(null)}
-      className={`w-full text-left p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
+      className={`w-full text-left p-3 rounded-md border transition-all flex items-center gap-3 ${
         selectedCharity === null ? "border-gold bg-gold/10" : "border-border hover:border-gold/30"
       }`}
     >
@@ -39,7 +39,7 @@ const StepCharity = ({ charities, selectedCharity, setSelectedCharity }: StepCha
       <button
         key={c.id}
         onClick={() => setSelectedCharity(c.id)}
-        className={`w-full text-left p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
+        className={`w-full text-left p-3 rounded-md border transition-all flex items-center gap-3 ${
           selectedCharity === c.id ? "border-gold bg-gold/10" : "border-border hover:border-gold/30"
         }`}
       >

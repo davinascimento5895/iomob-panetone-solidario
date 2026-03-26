@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ShoppingCart, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import rotaryLogo from "@/assets/logo-rotary.svg";
 
@@ -108,10 +109,9 @@ const Navbar = () => {
 
             <Link
               to="/app/produtos"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold bg-gold hover:bg-gold-dark text-navy-dark px-4 py-1.5 rounded-lg transition-colors duration-150"
+              className="inline-flex"
             >
-              Comprar Agora
-              <ArrowRight className="h-3.5 w-3.5" />
+              <Button className="px-4 py-2 h-10 font-semibold">Comprar Agora <ArrowRight className="ml-2 h-4 w-4" /></Button>
             </Link>
           </div>
         </div>
@@ -177,12 +177,8 @@ const Navbar = () => {
                 >
                   Entrar
                 </Link>
-                <Link
-                  to="/app/produtos"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex-1 text-center text-sm font-semibold bg-gold hover:bg-gold-dark text-navy-dark py-2.5 rounded-xl transition-colors"
-                >
-                  Comprar Agora
+                <Link to="/app/produtos" onClick={() => setMobileOpen(false)} className="flex-1">
+                  <Button className="w-full py-2.5">Comprar Agora</Button>
                 </Link>
               </div>
             </nav>

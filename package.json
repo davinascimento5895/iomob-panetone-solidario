@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "playwright:flow": "node scripts/playwright-flow.js",
     "build:dev": "vite build --mode development",
+    "stitch-mcp-proxy": "node scripts/stitch-mcp-proxy.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
@@ -62,9 +64,10 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "^3.25.76"
+    "zod": "3.20.5"
   },
   "devDependencies": {
+    "@_davideast/stitch-mcp": "^0.5.1",
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.0",
@@ -80,6 +83,7 @@
     "globals": "^15.15.0",
     "jsdom": "^20.0.3",
     "lovable-tagger": "^1.1.13",
+    "playwright": "^1.58.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",

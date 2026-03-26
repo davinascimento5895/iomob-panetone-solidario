@@ -46,8 +46,8 @@ const AdminSettings = () => {
       toast.success("Configurações salvas com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
     },
-    onError: (err: any) => {
-      toast.error(err.message || "Erro ao salvar");
+    onError: () => {
+      toast.error("Erro ao salvar configurações. Tente novamente.");
     },
   });
 

@@ -33,7 +33,7 @@ const AdminProducts = () => {
       </div>
 
       {/* Desktop table */}
-      <div className="hidden md:block bg-card rounded-xl shadow-sm overflow-hidden">
+      <div className="hidden md:block bg-card rounded-md overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">

@@ -139,7 +139,7 @@ const Checkout = () => {
       });
       clearCart();
     } catch (err: any) {
-      toast.error("Erro ao criar pedido", { description: err.message });
+      toast.error("Erro ao criar pedido. Por favor, tente novamente.");
     } finally { submitLock.current = false; setSubmitting(false); }
   };
 

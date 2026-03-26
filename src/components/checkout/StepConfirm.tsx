@@ -34,10 +34,10 @@ const StepConfirm = ({
   finalTotal,
   fmt,
 }: StepConfirmProps) => (
-  <div className="space-y-3 animate-fade-in">
+  <div className="space-y-3">
     <p className="text-xs font-bold text-foreground uppercase tracking-wide">Confirme seu pedido</p>
 
-    <div className="bg-card rounded-xl border border-border divide-y divide-border">
+    <div className="bg-card rounded-md border border-border divide-y divide-border">
       <div className="p-3 space-y-1.5">
         {items.map((item) => (
           <div key={item.productId} className="flex justify-between text-sm">
