@@ -71,11 +71,20 @@ const AdminCombos = () => {
 
   const deleteCombo = useMutation({
     mutationFn: async (id: string) => {
-      await supabase.from("combos").delete().eq("id", id);
+      const { data, error } = await supabase.from("combos").delete().eq("id", id);
+      if (error) {
+        console.error("deleteCombo error:", error);
+        throw error;
+      }
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["combos"] });
       toast.success("Combo excluído.");
+    },
+    onError: (err: any) => {
+      console.error("Erro ao excluir combo:", err);
+      toast.error("Erro ao excluir combo.");
     },
   });
 

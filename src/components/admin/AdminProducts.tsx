@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, ImageIcon } from "lucide-react";
 import { useProducts, Product } from "@/contexts/ProductContext";
+import { toast } from "sonner";
 import ProductEditDialog from "./ProductEditDialog";
 import ProductAddDialog from "./ProductAddDialog";
 import { Card, CardContent } from "@/components/ui/card";
@@ -151,7 +152,7 @@ const AdminProducts = () => {
       <ProductEditDialog product={editProduct} open={!!editProduct} onClose={() => setEditProduct(null)} onSave={updateProduct} />
       <ProductAddDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={addProduct} />
 
-      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog open={deleteId !== null} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir produto?</AlertDialogTitle>
@@ -159,7 +160,21 @@ const AdminProducts = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => { if (deleteId !== null) deleteProduct(deleteId); setDeleteId(null); }}>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (deleteId !== null) {
+                  try {
+                    await deleteProduct(deleteId);
+                    toast.success("Produto excluído.");
+                  } catch (e) {
+                    console.error(e);
+                    toast.error("Erro ao excluir produto.");
+                  }
+                }
+                setDeleteId(null);
+              }}
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -101,8 +101,18 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteProduct = async (id: string) => {
-    await supabase.from("products").delete().eq("id", id);
-    fetchProducts();
+    try {
+      const { data, error } = await supabase.from("products").delete().eq("id", id);
+      if (error) {
+        console.error("Error deleting product:", error);
+        throw error;
+      }
+      await fetchProducts();
+      return data;
+    } catch (err) {
+      console.error("deleteProduct failed:", err);
+      throw err;
+    }
   };
 
   return (
