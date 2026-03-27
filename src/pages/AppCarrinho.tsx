@@ -45,7 +45,8 @@ const AppCarrinho = () => {
   }
 
   return (
-    <div className="p-3 md:p-6 max-w-3xl mx-auto flex flex-col gap-3">
+    <>
+      <div className="p-3 md:p-6 max-w-3xl mx-auto flex flex-col gap-3">
       {items.map((item) => {
         const stock = getStock(item.productId);
         const atMax = item.quantity >= stock;
