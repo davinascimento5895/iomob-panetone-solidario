@@ -16,11 +16,15 @@ const statusLabels: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
-const revenueChartConfig = { total: { label: "Faturamento", color: "hsl(38, 80%, 55%)" } };
+const revenueChartConfig = {
+  total: { label: "Faturamento", color: "hsl(38, 80%, 55%)" },
+  cumulative: { label: "Faturamento (acumulado)", color: "hsl(38, 80%, 55%)" },
+};
 const ordersChartConfig = { count: { label: "Pedidos", color: "hsl(220, 60%, 25%)" } };
 
 const AdminDashboard = () => {
   const [period, setPeriod] = useState("30d");
+  const [revenueView, setRevenueView] = useState<"daily" | "cumulative">("daily");
 
   const daysMap: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "365d": 365 };
   const days = daysMap[period] || 30;
@@ -75,20 +79,34 @@ const AdminDashboard = () => {
   const ordersTrend = calcTrend(totalOrders, prevOrderCount);
   const ticketTrend = calcTrend(avgTicket, prevAvgTicket);
 
-  const revenueByDate = orders.reduce((acc: Record<string, number>, o) => {
-    const date = new Date(o.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-    acc[date] = (acc[date] || 0) + Number(o.total);
-    return acc;
-  }, {});
+  // Build daily aggregates using ISO date keys to guarantee chronological order,
+  // and also compute a cumulative series for the revenue chart when requested.
+  const revenueByIso: Record<string, number> = {};
+  const ordersByIso: Record<string, number> = {};
 
-  const ordersByDate = orders.reduce((acc: Record<string, number>, o) => {
-    const date = new Date(o.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-    acc[date] = (acc[date] || 0) + 1;
-    return acc;
-  }, {});
+  orders.forEach((o) => {
+    const iso = new Date(o.created_at).toISOString().slice(0, 10); // YYYY-MM-DD
+    revenueByIso[iso] = (revenueByIso[iso] || 0) + Number(o.total);
+    ordersByIso[iso] = (ordersByIso[iso] || 0) + 1;
+  });
 
-  const revenueData = Object.entries(revenueByDate).map(([date, total]) => ({ date, total }));
-  const ordersData = Object.entries(ordersByDate).map(([date, count]) => ({ date, count }));
+  const allIsoDates = Array.from(new Set([...Object.keys(revenueByIso), ...Object.keys(ordersByIso)]));
+  const sortedIsoDates = allIsoDates.sort((a, b) => +new Date(a) - +new Date(b));
+
+  const revenueData = sortedIsoDates.map((iso) => ({
+    date: new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+    iso,
+    total: revenueByIso[iso] || 0,
+  }));
+
+  // cumulative
+  let _cum = 0;
+  const revenueDataWithCumulative = revenueData.map((d) => ({ ...d, cumulative: (_cum += d.total) }));
+
+  const ordersData = sortedIsoDates.map((iso) => ({
+    date: new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+    count: ordersByIso[iso] || 0,
+  }));
 
   const statusCounts = orders.reduce((acc: Record<string, number>, o) => {
     acc[o.status] = (acc[o.status] || 0) + 1;
@@ -112,17 +130,29 @@ const AdminDashboard = () => {
     <div className="animate-fade-in space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground">Dashboard</h1>
-        <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-[120px] sm:w-[140px] text-xs sm:text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">7 dias</SelectItem>
-            <SelectItem value="30d">30 dias</SelectItem>
-            <SelectItem value="90d">90 dias</SelectItem>
-            <SelectItem value="365d">1 ano</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-[120px] sm:w-[140px] text-xs sm:text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">7 dias</SelectItem>
+              <SelectItem value="30d">30 dias</SelectItem>
+              <SelectItem value="90d">90 dias</SelectItem>
+              <SelectItem value="365d">1 ano</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={revenueView} onValueChange={setRevenueView}>
+            <SelectTrigger className="w-[140px] text-xs sm:text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Por dia</SelectItem>
+              <SelectItem value="cumulative">Acumulado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -155,7 +185,7 @@ const AdminDashboard = () => {
           <CardContent className="px-1 sm:px-6 pb-3">
             <ChartContainer config={revenueChartConfig} className="w-full h-[200px] sm:h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
+                <AreaChart data={revenueDataWithCumulative} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(38, 80%, 55%)" stopOpacity={0.3} />
@@ -164,9 +194,15 @@ const AdminDashboard = () => {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(40, 15%, 88%)" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `R$${v}`} width={50} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `R$ ${Number(v).toLocaleString('pt-BR')}`} width={50} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area type="monotone" dataKey="total" stroke="hsl(38, 80%, 55%)" fill="url(#goldGrad)" strokeWidth={2} />
+                  <Area
+                    type="monotone"
+                    dataKey={revenueView === "daily" ? "total" : "cumulative"}
+                    stroke="hsl(38, 80%, 55%)"
+                    fill="url(#goldGrad)"
+                    strokeWidth={2}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </ChartContainer>
