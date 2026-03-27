@@ -5,6 +5,7 @@ import { ShoppingBag, ShoppingCart, ClipboardList, Settings, LogOut } from "luci
 import { useCart } from "@/contexts/CartContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import rotaryLogo from "@/assets/logo-rotary.svg";
+import LogoutConfirm from "@/components/LogoutConfirm";
 
 const navItems = [
   { label: "Produtos", href: "/app/produtos", icon: ShoppingBag },
@@ -83,13 +84,14 @@ const AuthenticatedLayout = () => {
               </Link>
             </div>
             <div className="flex justify-end">
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-lg text-navy-dark/50 hover:text-navy-dark hover:bg-gray-100 transition-colors"
-                aria-label="Sair"
-              >
-                <LogOut className="h-4.5 w-4.5" />
-              </button>
+              <LogoutConfirm onConfirm={handleLogout}>
+                <button
+                  className="p-2 rounded-lg text-navy-dark/50 hover:text-navy-dark hover:bg-gray-100 transition-colors"
+                  aria-label="Sair"
+                >
+                  <LogOut className="h-4.5 w-4.5" />
+                </button>
+              </LogoutConfirm>
             </div>
           </div>
         </header>
@@ -178,13 +180,12 @@ const AuthenticatedLayout = () => {
 
         {/* Logout */}
         <div className="p-2 border-t border-gray-200">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-navy-dark/40 hover:text-navy-dark hover:bg-gray-100 transition-colors w-full"
-          >
-            <LogOut className="h-4.5 w-4.5 flex-shrink-0" />
-            <span>Sair</span>
-          </button>
+          <LogoutConfirm onConfirm={handleLogout}>
+            <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-navy-dark/40 hover:text-navy-dark hover:bg-gray-100 transition-colors w-full">
+              <LogOut className="h-4.5 w-4.5 flex-shrink-0" />
+              <span>Sair</span>
+            </button>
+          </LogoutConfirm>
         </div>
       </aside>
 
@@ -198,13 +199,12 @@ const AuthenticatedLayout = () => {
               <span className="text-sm text-navy-dark/50">
                 Olá, <span className="font-semibold text-navy-dark">{userName.split(" ")[0]}</span>
               </span>
-              <button
-                onClick={handleLogout}
-                className="text-sm flex items-center gap-1.5 text-navy-dark/40 hover:text-navy-dark transition-colors"
-              >
-                <LogOut className="h-4 w-4" />
-                Sair
-              </button>
+              <LogoutConfirm onConfirm={handleLogout}>
+                <button className="text-sm flex items-center gap-1.5 text-navy-dark/40 hover:text-navy-dark transition-colors">
+                  <LogOut className="h-4 w-4" />
+                  Sair
+                </button>
+              </LogoutConfirm>
             </div>
           </div>
         </header>

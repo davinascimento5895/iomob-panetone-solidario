@@ -1,11 +1,24 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Minus, Trash2, ShoppingBag, ArrowRight, ArrowLeft } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Carrinho = () => {
   const { items, updateQuantity, removeItem, clearCart, totalPrice } = useCart();
+  const [removeConfirmId, setRemoveConfirmId] = useState<string | null>(null);
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -31,7 +44,7 @@ const Carrinho = () => {
 
         <div className="space-y-3 mb-6">
           {items.map((item) => (
-            <Card key={item.productId}>
+              <Card key={item.productId}>
               <CardContent className="p-4 flex items-center gap-4">
                 <img
                   src={item.image}
@@ -72,7 +85,7 @@ const Carrinho = () => {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={() => removeItem(item.productId)}
+                  onClick={() => setRemoveConfirmId(item.productId)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -108,7 +121,7 @@ const Carrinho = () => {
             </div>
 
             <button
-              onClick={clearCart}
+              onClick={() => setClearConfirmOpen(true)}
               className="text-xs text-muted-foreground hover:text-destructive mt-4 underline block mx-auto transition-colors"
             >
               Limpar carrinho
@@ -116,6 +129,41 @@ const Carrinho = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Remove item confirmation */}
+      <AlertDialog open={!!removeConfirmId} onOpenChange={(open) => !open && setRemoveConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja remover "{items.find((i) => i.productId === removeConfirmId)?.name}" do carrinho?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => { if (removeConfirmId) removeItem(removeConfirmId); setRemoveConfirmId(null); }}>
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Clear cart confirmation */}
+      <AlertDialog open={clearConfirmOpen} onOpenChange={(open) => !open && setClearConfirmOpen(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar carrinho?</AlertDialogTitle>
+            <AlertDialogDescription>Deseja remover todos os itens do carrinho?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => { clearCart(); setClearConfirmOpen(false); }}>
+              Limpar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </main>
   );
 };
