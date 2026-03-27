@@ -118,9 +118,11 @@ const AppLayout = () => {
             path="/admin"
             element={
               <QueryClientProvider client={queryClient}>
-                <AdminRoute>
-                  <Admin />
-                </AdminRoute>
+                <ProductProvider>
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                </ProductProvider>
               </QueryClientProvider>
             }
           />
