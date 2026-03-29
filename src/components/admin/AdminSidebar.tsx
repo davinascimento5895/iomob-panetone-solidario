@@ -14,7 +14,11 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+
+// mark manual signout to avoid aggressive auto-redirect
+import { markManualSignOut } from "@/lib/authHelpers";
 
 export type Tab = "dashboard" | "products" | "orders" | "stock" | "coupons" | "combos" | "charities" | "settings";
 
@@ -63,19 +67,55 @@ export const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => 
           Voltar ao Site
         </Button>
       </Link>
-      <Link to="/login">
-        <Button variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
-          <LogOut className="h-4 w-4 mr-2" />
-          Sair
-        </Button>
-      </Link>
+      <LogoutButton />
     </div>
   </aside>
 );
 
+const LogoutButton = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      markManualSignOut();
+    } catch (e) {
+      // ignore
+    }
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      // ignore
+    }
+    navigate("/");
+  };
+
+  return (
+    <Button onClick={handleLogout} variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
+      <LogOut className="h-4 w-4 mr-2" />
+      Sair
+    </Button>
+  );
+};
+
 export const AdminMobileHeader = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
   const [open, setOpen] = useState(false);
   const currentTab = tabs.find((t) => t.id === activeTab);
+
+  const MobileLogout = ({ closeMenu }: { closeMenu: () => void }) => {
+    const navigate = useNavigate();
+    const handleLogout = async () => {
+      try { markManualSignOut(); } catch (e) {}
+      try { await supabase.auth.signOut(); } catch (e) {}
+      closeMenu();
+      navigate("/");
+    };
+    return (
+      <Button onClick={handleLogout} variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
+        <LogOut className="h-4 w-4 mr-2" />
+        Sair
+      </Button>
+    );
+  };
 
   const handleSelect = (tab: Tab) => {
     setActiveTab(tab);
@@ -132,12 +172,7 @@ export const AdminMobileHeader = ({ activeTab, setActiveTab }: AdminSidebarProps
                   Voltar ao Site
                 </Button>
               </Link>
-              <Link to="/login" onClick={() => setOpen(false)}>
-                <Button variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </Link>
+              <MobileLogout closeMenu={() => setOpen(false)} />
             </div>
           </aside>
         </div>

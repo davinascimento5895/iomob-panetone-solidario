@@ -158,6 +158,8 @@ const AdminOrders = () => {
         <h1 className="text-2xl font-display font-bold text-foreground">Pedidos</h1>
         <div className="flex gap-2">
           <Input
+            id="pickupCode"
+            name="pickupCode"
             placeholder="Código (6 letras)"
             value={pickupCode}
             onChange={(e) => setPickupCode(e.target.value.toUpperCase().slice(0, 6))}

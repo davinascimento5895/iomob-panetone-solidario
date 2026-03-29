@@ -6,6 +6,7 @@ const SonnerToaster = lazy(() => import("@/components/ui/sonner").then((m) => ({
 const TooltipProviderLazy = lazy(() => import("@/components/ui/tooltip").then((m) => ({ default: m.TooltipProvider })));
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ProductProvider } from "./contexts/ProductContext";
 import { CartProvider } from "./contexts/CartContext";
 const Navbar = lazy(() => import("./components/Navbar"));
@@ -61,6 +62,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Moderator = lazy(() => import("./pages/Moderator"));
+const ModeratorProfile = lazy(() => import("./pages/ModeratorProfile"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Produtos = lazy(() => import("./pages/Produtos"));
@@ -72,6 +74,89 @@ const AppPedidos = lazy(() => import("./pages/AppPedidos"));
 const AppConfig = lazy(() => import("./pages/AppConfig"));
 
 const queryClient = new QueryClient();
+
+// Global auth redirector: when a session is created or restored, redirect moderators/admins
+const AuthRedirector = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    let mounted = true;
+    let subscription: any = null;
+
+    (async () => {
+      try {
+        const { supabase } = await import("./integrations/supabase/client");
+
+        const checkAndRedirect = async (userId: string | undefined | null) => {
+          if (!userId || !mounted) return;
+          try {
+            // if the user manually signed out recently, skip auto-redirect
+            try {
+              const { shouldSkipAutoRedirect, clearManualSignOut } = await import("./lib/authHelpers");
+              if (shouldSkipAutoRedirect()) return;
+              // continue — if we redirect we will clear the marker
+              // (we clear after successful redirect below)
+            } catch (e) {
+              // ignore
+            }
+
+            const { data: roles } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", userId);
+            const roleList = Array.isArray(roles) ? roles.map((r: any) => r.role) : [];
+            if (roleList.includes("admin")) {
+              if (!location.pathname.startsWith("/admin")) {
+                navigate("/admin", { replace: true });
+                const { clearManualSignOut } = await import("./lib/authHelpers");
+                clearManualSignOut();
+              }
+            } else if (roleList.includes("moderator") || roleList.includes("moderador")) {
+              if (!location.pathname.startsWith("/moderator")) {
+                navigate("/moderator", { replace: true });
+                const { clearManualSignOut } = await import("./lib/authHelpers");
+                clearManualSignOut();
+              }
+            }
+          } catch (e) {
+            // ignore errors
+          }
+        };
+
+        // on load, if session exists, redirect accordingly
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) await checkAndRedirect(session.user?.id);
+        } catch (e) {
+          // ignore
+        }
+
+        // subscribe to auth changes (SIGNED_IN covers magic-link / oauth)
+        const sub = supabase.auth.onAuthStateChange((_event, session) => {
+          if (!session) return;
+          if (_event === "SIGNED_IN" || _event === "USER_UPDATED") {
+            checkAndRedirect(session.user?.id);
+          }
+        });
+        subscription = sub?.data?.subscription || sub;
+      } catch (e) {
+        // ignore import errors
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      try {
+        if (subscription?.unsubscribe) subscription.unsubscribe();
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, [navigate, location]);
+
+  return null;
+};
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -138,6 +223,17 @@ const AppLayout = () => {
             }
           />
 
+          <Route
+            path="/moderator/profile"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <ModeratorRoute>
+                  <ModeratorProfile />
+                </ModeratorRoute>
+              </QueryClientProvider>
+            }
+          />
+
           {/* Authenticated area - providers mounted only when /app is accessed */}
           <Route
             path="/app"
@@ -187,6 +283,7 @@ const App = () => (
           v7_startTransition: true,
           v7_relativeSplatPath: true,
         }}>
+          <AuthRedirector />
           <AppLayout />
         </BrowserRouter>
       </CartProvider>

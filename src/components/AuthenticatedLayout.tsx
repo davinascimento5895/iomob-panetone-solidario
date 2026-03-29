@@ -51,6 +51,13 @@ const AuthenticatedLayout = () => {
   }, [navigate, location.pathname]);
 
   const handleLogout = async () => {
+    try {
+      // mark manual signout so auto-redirector won't re-login immediately
+      const { markManualSignOut } = await import("@/lib/authHelpers");
+      markManualSignOut();
+    } catch (e) {
+      // ignore
+    }
     await supabase.auth.signOut();
     navigate("/");
   };

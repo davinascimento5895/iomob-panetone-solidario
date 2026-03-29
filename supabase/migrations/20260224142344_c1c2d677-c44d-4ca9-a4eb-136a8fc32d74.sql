@@ -58,9 +58,13 @@ CREATE POLICY "Users can insert own orders" ON public.orders
   FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can read own orders" ON public.orders
+CREATE POLICY "Users and moderators/admins can read orders" ON public.orders
   FOR SELECT TO authenticated
-  USING (auth.uid() = user_id OR public.has_role(auth.uid(), 'admin'));
+  USING (
+    auth.uid() = user_id
+    OR public.has_role(auth.uid(), 'admin')
+    OR public.has_role(auth.uid(), 'moderator')
+  );
 
 CREATE POLICY "Admins can update orders" ON public.orders
   FOR UPDATE TO authenticated
@@ -78,12 +82,16 @@ CREATE POLICY "Users can insert order items" ON public.order_items
   FOR INSERT TO authenticated
   WITH CHECK (true);
 
-CREATE POLICY "Users can read own order items" ON public.order_items
+CREATE POLICY "Users and moderators/admins can read order items" ON public.order_items
   FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM public.orders WHERE orders.id = order_items.order_id 
-      AND (orders.user_id = auth.uid() OR public.has_role(auth.uid(), 'admin'))
+      AND (
+        orders.user_id = auth.uid()
+        OR public.has_role(auth.uid(), 'admin')
+        OR public.has_role(auth.uid(), 'moderator')
+      )
     )
   );
 

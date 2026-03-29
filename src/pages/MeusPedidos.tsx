@@ -48,6 +48,12 @@ const MeusPedidos = () => {
   });
 
   const handleLogout = async () => {
+    try {
+      const { markManualSignOut } = await import("@/lib/authHelpers");
+      markManualSignOut();
+    } catch (e) {
+      // ignore
+    }
     await supabase.auth.signOut();
     navigate("/");
   };

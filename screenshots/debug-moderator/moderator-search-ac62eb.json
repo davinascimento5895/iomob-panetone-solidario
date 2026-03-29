@@ -1,0 +1,5 @@
+{
+  "url": "http://localhost:8083/moderator",
+  "pedido": "",
+  "texto": "Pedido não encontrado com esse código.\nRetirada — Balcão\n\nLeitura de QR e confirmação de retirada (somente moderador).\n\nPerfil\nBuscar\nAbrir Câmera\nÚltimas retiradas\n\nHistórico de retiradas recentes (máx. 20).\n\nNenhuma retirada registrada ainda.\nDicas de uso\nLeia o QR code ou digite o código manualmente.\nConfirme somente se o cliente apresentar o pedido correto.\nSerá solicitado digitar o código para evitar confirmações acidentais."
+}

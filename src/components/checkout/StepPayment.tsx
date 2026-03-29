@@ -106,6 +106,8 @@ const StepPayment = ({
       ) : (
         <div className="flex gap-2">
           <Input
+            id="couponCode"
+            name="couponCode"
             placeholder="Código do cupom"
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
@@ -127,12 +129,12 @@ const StepPayment = ({
     <div className="space-y-2.5 bg-card rounded-xl p-3 border border-border">
       <p className="text-xs font-bold text-foreground uppercase tracking-wide">Seus dados</p>
       <div className="space-y-1">
-        <Label className="text-xs">Nome *</Label>
-        <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Seu nome completo" />
+        <Label htmlFor="customerName" className="text-xs">Nome *</Label>
+        <Input id="customerName" name="customerName" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Seu nome completo" />
       </div>
       <div className="space-y-1">
-        <Label className="text-xs">Telefone (opcional)</Label>
-        <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="(41) 99999-9999" />
+        <Label htmlFor="customerPhone" className="text-xs">Telefone (opcional)</Label>
+        <Input id="customerPhone" name="customerPhone" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="(41) 99999-9999" />
       </div>
       <div className="space-y-1">
         <Label className="text-xs">Observações (opcional)</Label>
