@@ -22,14 +22,12 @@ const Carrinho = () => {
 
   if (items.length === 0) {
     return (
-      <main className="min-h-screen pt-24 pb-12 px-4">
-        <div className="container mx-auto max-w-2xl text-center py-20">
-          <ShoppingBag className="h-16 w-16 text-muted-foreground/30 mx-auto mb-6" />
-          <h1 className="text-2xl font-display font-bold text-foreground mb-3">Seu carrinho está vazio</h1>
-          <p className="text-muted-foreground mb-8">Adicione produtos para continuar</p>
+      <main className="min-h-screen pt-24 pb-12 px-4 bg-[#FAFAFA]">
+        <div className="container mx-auto max-w-2xl text-center py-32 bg-white rounded-2xl shadow-sm border border-stone-100">
+          <p className="text-stone-400 mb-8">Seu carrinho está vazio</p>
           <Link to="/produtos">
-            <Button className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Ver Produtos
+            <Button className="bg-gold hover:bg-gold/90 text-white px-8 h-12 rounded-full transition-all shadow-lg shadow-gold/20">
+              Ver produtos
             </Button>
           </Link>
         </div>
@@ -38,53 +36,53 @@ const Carrinho = () => {
   }
 
   return (
-    <main className="min-h-screen pt-24 pb-12 px-4">
-      <div className="container mx-auto max-w-3xl">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground mb-6">Carrinho</h1>
+    <main className="min-h-screen pt-24 pb-12 px-4 bg-[#FAFAFA]">
+      <div className="container mx-auto max-w-2xl">
+        <h1 className="text-2xl font-display font-semibold text-stone-900 mb-8">Carrinho</h1>
 
-        <div className="space-y-3 mb-6">
+        <div className="space-y-4 mb-8">
           {items.map((item) => (
-              <Card key={item.productId}>
+            <Card key={item.productId} className="border-stone-100 shadow-sm rounded-2xl overflow-hidden bg-white">
               <CardContent className="p-4 flex items-center gap-4">
                 <img
                   src={item.image}
                   alt={item.name}
-                  className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+                  className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-bold text-foreground truncate">{item.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    R$ {item.price.toFixed(2).replace(".", ",")} / unidade
+                  <h3 className="font-medium text-stone-900 truncate">{item.name}</h3>
+                  <p className="text-xs text-stone-400">
+                    R$ {item.price.toFixed(2).replace(".", ",")}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-stone-50 p-1 rounded-lg border border-stone-100">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-lg"
+                    className="h-7 w-7 rounded-sm hover:bg-white transition-colors"
                     onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                   >
-                    <Minus className="h-3 w-3" />
+                    <Minus className="h-3 w-3 text-stone-600" />
                   </Button>
-                  <span className="w-8 text-center font-bold text-foreground">{item.quantity}</span>
+                  <span className="w-6 text-center text-sm font-semibold text-stone-900">{item.quantity}</span>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-lg"
+                    className="h-7 w-7 rounded-sm hover:bg-white transition-colors"
                     onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-3 w-3 text-stone-600" />
                   </Button>
                 </div>
-                <div className="text-right flex-shrink-0 w-24 hidden sm:block">
-                  <p className="font-bold text-foreground">
+                <div className="text-right flex-shrink-0 w-20 hidden sm:block">
+                  <p className="font-semibold text-stone-900 text-sm">
                     R$ {(item.price * item.quantity).toFixed(2).replace(".", ",")}
                   </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  className="h-8 w-8 text-stone-300 hover:text-red-500 hover:bg-transparent transition-colors"
                   onClick={() => setRemoveConfirmId(item.productId)}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -95,36 +93,36 @@ const Carrinho = () => {
         </div>
 
         {/* Summary */}
-        <Card>
+        <Card className="border-stone-100 shadow-lg shadow-stone-200/50 rounded-2xl bg-white overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-muted-foreground">Subtotal ({items.reduce((s, i) => s + i.quantity, 0)} itens)</span>
-              <span className="font-bold text-foreground">R$ {totalPrice.toFixed(2).replace(".", ",")}</span>
+              <span className="text-sm text-stone-500">Subtotal</span>
+              <span className="text-sm font-semibold text-stone-900">R$ {totalPrice.toFixed(2).replace(".", ",")}</span>
             </div>
-            <div className="border-t border-border my-4" />
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-lg font-display font-bold text-foreground">Total</span>
-              <span className="text-2xl font-bold text-gradient-gold">R$ {totalPrice.toFixed(2).replace(".", ",")}</span>
+            <div className="border-t border-stone-50 my-4" />
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-stone-900 font-semibold">Total</span>
+              <span className="text-2xl font-bold text-gold">R$ {totalPrice.toFixed(2).replace(".", ",")}</span>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/produtos" className="flex-1">
-                <Button variant="outline" className="w-full rounded-xl">
-                  <ArrowLeft className="h-4 w-4 mr-2" /> Continuar Comprando
+            <div className="flex flex-col gap-3">
+              <Link to="/checkout" className="w-full">
+                <Button className="w-full bg-stone-900 hover:bg-stone-800 text-white h-12 rounded-full transition-all shadow-lg shadow-stone-900/10">
+                  Finalizar pedido
                 </Button>
               </Link>
-              <Link to="/checkout" className="flex-1">
-                <Button className="w-full bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl">
-                  Finalizar Pedido <ArrowRight className="h-4 w-4 ml-2" />
+              <Link to="/produtos" className="w-full">
+                <Button variant="ghost" className="w-full h-12 text-stone-500 hover:text-stone-900 hover:bg-transparent">
+                  Adicionar mais produtos
                 </Button>
               </Link>
             </div>
 
             <button
               onClick={() => setClearConfirmOpen(true)}
-              className="text-xs text-muted-foreground hover:text-destructive mt-4 underline block mx-auto transition-colors"
+              className="text-[10px] uppercase tracking-widest font-bold text-stone-300 hover:text-stone-500 mt-6 block mx-auto transition-colors"
             >
-              Limpar carrinho
+              Esvaziar carrinho
             </button>
           </CardContent>
         </Card>

@@ -26,61 +26,72 @@ const OrderComplete = ({ pickupCode, items, total, discount, charityName, fmt }:
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-8">
+    <main className="min-h-screen flex items-center justify-center px-4 py-8 bg-[#FAFAFA]">
       <div className="w-full max-w-md">
-        <Card>
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-7 w-7 text-green-600" />
+        <Card className="border-none shadow-2xl shadow-stone-200 rounded-[2.5rem] overflow-hidden bg-white">
+          <CardContent className="p-8 text-center space-y-6">
+            <div className="h-20 w-20 rounded-full bg-stone-50 flex items-center justify-center mx-auto mb-2">
+              <CheckCircle2 className="h-10 w-10 text-gold" />
             </div>
             <div>
-              <h2 className="text-xl font-display font-bold text-foreground">Pedido Confirmado!</h2>
-              <p className="text-sm text-muted-foreground mt-1">Apresente o código abaixo na retirada</p>
+              <h2 className="text-2xl font-display font-bold text-stone-900">Reserva confirmada</h2>
+              <p className="text-stone-400 text-sm mt-2">Apresente este código no local de retirada</p>
             </div>
 
-            <div className="bg-muted rounded-xl p-4">
-              <p className="text-3xl font-mono font-bold tracking-[0.3em] text-gold">{pickupCode}</p>
+            <div className="bg-stone-50 rounded-3xl p-8 border border-stone-100 relative group">
+              <p className="text-4xl font-mono font-bold tracking-[0.2em] text-stone-900">{pickupCode}</p>
               <button
                 onClick={handleCopy}
-                className="mt-2 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto transition-colors"
+                className="mt-4 text-[10px] uppercase tracking-widest font-bold text-stone-400 hover:text-stone-900 flex items-center gap-2 mx-auto transition-all"
               >
-                {copied ? <><Check className="h-3 w-3" /> Copiado!</> : <><Copy className="h-3 w-3" /> Copiar código</>}
+                {copied ? <><Check className="h-3 w-3 text-gold" /> Copiado</> : <><Copy className="h-3 w-3" /> Copiar código</>}
               </button>
             </div>
 
-            {/* Local e horário de retirada */}
-            <div className="bg-gold/5 border border-gold/20 rounded-xl p-4 text-left space-y-2.5">
-              <p className="text-xs font-bold text-gold-dark uppercase tracking-wide text-center mb-3">
-                Informações de Retirada
-              </p>
-              <div className="flex items-start gap-2.5 text-sm">
-                <MapPin className="h-4 w-4 text-gold flex-shrink-0 mt-0.5" />
+            <div className="space-y-4 text-left pt-2">
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded-2xl bg-stone-50 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="h-5 w-5 text-stone-400" />
+                </div>
                 <div>
-                  <p className="font-semibold text-foreground">Rotary Club Connect</p>
-                  <p className="text-muted-foreground text-xs">Endereço confirmado por e-mail após aprovação do pedido</p>
+                  <p className="text-sm font-bold text-stone-900">Ponto de retirada</p>
+                  <p className="text-stone-400 text-xs mt-0.5">Rotary Club Connect</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 text-sm">
-                <Clock className="h-4 w-4 text-gold flex-shrink-0 mt-0.5" />
+              
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded-2xl bg-stone-50 flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-5 w-5 text-stone-400" />
+                </div>
                 <div>
-                  <p className="font-semibold text-foreground">Período de Retirada</p>
-                  <p className="text-muted-foreground text-xs">Você receberá as datas disponíveis por e-mail</p>
+                  <p className="text-sm font-bold text-stone-900">Data e horário</p>
+                  <p className="text-stone-400 text-xs mt-0.5">As opções serão enviadas ao seu e-mail</p>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground text-center border-t border-gold/10 pt-2.5 mt-1">
-                O pagamento é realizado <strong>na retirada</strong>. Guarde o código acima.
-              </p>
             </div>
 
-            <div className="text-left border-t border-border pt-3 space-y-1.5">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Itens do pedido</p>
-              {items.map((item) => (
-                <div key={item.productId} className="flex justify-between text-sm">
-                  <span className="text-foreground">{item.quantity}x {item.name}</span>
-                  <span className="font-semibold text-foreground">{fmt(item.price * item.quantity)}</span>
-                </div>
-              ))}
+            <div className="pt-6 border-t border-stone-50 space-y-3">
+              <Link to="/meus-pedidos" className="block w-full">
+                <Button className="w-full bg-stone-900 hover:bg-stone-800 text-white h-14 rounded-2xl transition-all shadow-lg shadow-stone-900/10 font-bold">
+                  Ver meus pedidos
+                </Button>
+              </Link>
+              <Link to="/" className="block w-full">
+                <Button variant="ghost" className="w-full h-12 text-stone-400 hover:text-stone-900 hover:bg-transparent text-sm">
+                  Voltar ao início
+                </Button>
+              </Link>
             </div>
+          </CardContent>
+        </Card>
+        
+        <p className="mt-8 text-center text-stone-300 text-[10px] uppercase font-bold tracking-widest">
+          Obrigado por apoiar esta causa
+        </p>
+      </div>
+    </main>
+  );
+};
 
             <div className="text-left border-t border-border pt-3 space-y-1.5">
               <div className="flex justify-between text-sm">

@@ -9,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Package, ArrowLeft, LogOut, Clock, CheckCircle2, Truck, XCircle } from "lucide-react";
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
-  pendente: { label: "Pendente", color: "bg-yellow-100 text-yellow-800 border-yellow-200", icon: Clock },
-  pronto: { label: "Pronto p/ Retirada", color: "bg-blue-100 text-blue-800 border-blue-200", icon: Truck },
-  retirado: { label: "Retirado", color: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle2 },
-  cancelado: { label: "Cancelado", color: "bg-red-100 text-red-800 border-red-200", icon: XCircle },
+  pendente: { label: "Pendente", color: "bg-stone-50 text-stone-500 border-stone-200", icon: Clock },
+  pronto: { label: "Pronto", color: "bg-stone-900 text-white border-transparent", icon: Truck },
+  retirado: { label: "Retirado", color: "bg-stone-100 text-stone-400 border-transparent", icon: CheckCircle2 },
+  cancelado: { label: "Cancelado", color: "bg-red-50 text-red-700 border-red-100", icon: XCircle },
 };
 
 const MeusPedidos = () => {
@@ -60,39 +60,37 @@ const MeusPedidos = () => {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center pt-20">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <main className="min-h-screen flex items-center justify-center pt-20 bg-[#FAFAFA]">
+        <div className="animate-spin h-6 w-6 border-2 border-gold border-t-transparent rounded-full" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen pt-24 pb-12 px-4">
-      <div className="container mx-auto max-w-3xl">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+    <main className="min-h-screen pt-24 pb-12 px-4 bg-[#FAFAFA]">
+      <div className="container mx-auto max-w-2xl">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
             <Link to="/">
-              <Button variant="ghost" size="icon" className="rounded-xl">
-                <ArrowLeft className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-stone-100 transition-colors">
+                <ArrowLeft className="h-5 w-5 text-stone-600" />
               </Button>
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">Meus Pedidos</h1>
+            <h1 className="text-2xl font-display font-semibold text-stone-900">Meus pedidos</h1>
           </div>
           <LogoutConfirm onConfirm={handleLogout}>
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
-              <LogOut className="h-4 w-4 mr-1" /> Sair
+            <Button variant="ghost" size="sm" className="text-stone-400 hover:text-stone-600 hover:bg-transparent transition-colors">
+              Sair
             </Button>
           </LogoutConfirm>
         </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-20">
-            <Package className="h-16 w-16 text-muted-foreground/30 mx-auto mb-6" />
-            <h2 className="text-xl font-display font-bold text-foreground mb-3">Nenhum pedido encontrado</h2>
-            <p className="text-muted-foreground mb-8">Você ainda não fez nenhum pedido</p>
+          <div className="text-center py-32 bg-white rounded-2xl shadow-sm border border-stone-100">
+            <p className="text-stone-400 mb-8">Nenhum pedido encontrado</p>
             <Link to="/produtos">
-              <Button className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl">
-                Ver Produtos
+              <Button className="bg-gold hover:bg-gold/90 text-white px-8 h-12 rounded-full transition-all shadow-lg shadow-gold/20">
+                Ver produtos
               </Button>
             </Link>
           </div>
@@ -100,54 +98,59 @@ const MeusPedidos = () => {
           <div className="space-y-4">
             {orders.map((order: any) => {
               const sc = statusConfig[order.status] || statusConfig.pendente;
-              const StatusIcon = sc.icon;
               const date = new Date(order.created_at);
-              const formattedDate = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-              const formattedTime = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+              const formattedDate = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
 
               return (
-                <Card key={order.id} className="overflow-hidden">
+                <Card key={order.id} className="overflow-hidden border-stone-100 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-2xl bg-white">
                   <CardContent className="p-0">
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-4 bg-muted/30 border-b border-border">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gold/10 p-2 rounded-lg">
-                          <Package className="h-4 w-4 text-gold" />
-                        </div>
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-6">
                         <div>
-                          <p className="text-xs text-muted-foreground">Código de Retirada</p>
-                          <p className="font-mono font-bold text-foreground tracking-wider">{order.pickup_code || "N/A"}</p>
+                          <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mb-1">
+                            Pedido #{order.id.split("-")[0]}
+                          </p>
+                          <p className="text-sm text-stone-500">{formattedDate}</p>
+                        </div>
+                        <Badge className={`${sc.color} px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-tight border-none shadow-none`}>
+                          {sc.label}
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-3 mb-6">
+                        {order.order_items?.map((item: any) => (
+                          <div key={item.id} className="flex justify-between items-center text-sm">
+                            <span className="text-stone-600">
+                              <span className="font-semibold text-stone-900">{item.quantity}x</span> {item.product_name}
+                            </span>
+                            <span className="text-stone-400">
+                              R$ {(Number(item.unit_price) * item.quantity).toFixed(2).replace(".", ",")}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {order.charities?.name && (
+                        <div className="pt-4 border-t border-stone-50 mb-4">
+                          <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mb-1">Entidade</p>
+                          <p className="text-sm font-medium text-stone-700">{order.charities.name}</p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-4 border-t border-stone-50">
+                        <div className="flex flex-col">
+                          <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mb-1">Código</p>
+                          <p className="font-mono font-bold text-stone-900 text-lg tracking-wider">
+                            {order.pickup_code || "---"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mb-1">Total</p>
+                          <p className="text-xl font-bold text-gold">
+                            R$ {Number(order.total_amount || order.total).toFixed(2).replace(".", ",")}
+                          </p>
                         </div>
                       </div>
-                      <Badge className={`${sc.color} border font-semibold gap-1`}>
-                        <StatusIcon className="h-3 w-3" />
-                        {sc.label}
-                      </Badge>
-                    </div>
-
-                    {/* Items */}
-                    <div className="p-4 space-y-2">
-                      {order.order_items?.map((item: any) => (
-                        <div key={item.id} className="flex justify-between text-sm">
-                          <span className="text-foreground">{item.quantity}x {item.product_name}</span>
-                          <span className="text-muted-foreground">
-                            R$ {(Number(item.unit_price) * item.quantity).toFixed(2).replace(".", ",")}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between p-4 border-t border-border bg-muted/10">
-                      <div className="text-xs text-muted-foreground">
-                        {formattedDate} às {formattedTime}
-                        {order.charities?.name && (
-                          <span className="ml-2">· ❤️ {order.charities.name}</span>
-                        )}
-                      </div>
-                      <p className="font-display font-bold text-foreground">
-                        R$ {Number(order.total).toFixed(2).replace(".", ",")}
-                      </p>
                     </div>
                   </CardContent>
                 </Card>

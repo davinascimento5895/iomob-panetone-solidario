@@ -194,10 +194,10 @@ const Checkout = () => {
 
   // Checkout steps
   return (
-    <main className="min-h-screen bg-background flex flex-col">
+    <main className="min-h-screen bg-[#FAFAFA] flex flex-col">
       <CheckoutHeader step={step} onBack={() => (step > 0 ? setStep(step - 1) : navigate(-1))} />
 
-      <div className="flex-1 overflow-y-auto px-4 pb-28 max-w-lg mx-auto w-full">
+      <div className="flex-1 overflow-y-auto px-4 pb-32 pt-6 max-w-lg mx-auto w-full">
         {step === 0 && (
           <StepReview
             items={items} cartWarnings={cartWarnings} getStock={getStock}
@@ -213,7 +213,7 @@ const Checkout = () => {
             onApplyCoupon={handleApplyCoupon} validatingCoupon={validatingCoupon}
             customerName={customerName} setCustomerName={setCustomerName}
             customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}
-            notes={notes} setNotes={setNotes} fmt={fmt}
+            notes={notes} fmt={fmt}
           />
         )}
         {step === 2 && (
@@ -231,38 +231,36 @@ const Checkout = () => {
         )}
       </div>
 
-      {/* Fixed bottom action: show total on left, actions on right */}
-      <div className="sticky bottom-0 z-40 bg-card border-t border-border p-3 safe-area-bottom">
-        <div className="max-w-lg mx-auto flex items-center justify-between gap-3 h-14 px-2">
-          <div className="flex flex-col justify-center items-start">
-            <span className="text-xs text-muted-foreground">Total</span>
-            <span className="text-lg md:text-xl font-bold text-foreground">{fmt(finalTotal)}</span>
+      {/* Fixed bottom action: more professional design */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-stone-100 px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-6">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-stone-400">Total</span>
+            <span className="text-2xl font-bold text-stone-900 tracking-tight leading-none mt-1">{fmt(finalTotal)}</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            {step > 0 && (
-              <Button variant="outline" size="lg" className="rounded-xl" onClick={() => setStep(step - 1)}>
-                Voltar
-              </Button>
-            )}
+          <div className="flex-1 flex justify-end">
             {step < 3 ? (
               <Button
                 size="lg"
-                className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl"
+                className="bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-2xl h-14 px-8 shadow-lg shadow-stone-900/10 transition-all flex items-center gap-2 group w-full max-w-[200px]"
                 disabled={!canAdvance()}
                 onClick={() => setStep(step + 1)}
               >
-                Continuar <ArrowRight className="h-4 w-4 ml-2" />
+                Próximo <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             ) : (
               <Button
                 size="lg"
-                className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl"
+                className="bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-2xl h-14 px-8 shadow-lg shadow-stone-900/10 transition-all flex items-center gap-2 w-full max-w-[200px]"
                 disabled={submitting}
                 onClick={handleSubmit}
               >
-                <ClipboardCheck className="h-4 w-4 mr-2" />
-                {submitting ? "Processando..." : "Confirmar Pedido"}
+                {submitting ? (
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <><ClipboardCheck className="h-4 w-4" /> Finalizar</>
+                )}
               </Button>
             )}
           </div>
