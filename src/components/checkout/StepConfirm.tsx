@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import type { CartItem } from "@/contexts/CartContext";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface AppliedCoupon {
   code: string;
@@ -35,60 +36,59 @@ const StepConfirm = ({
   fmt,
 }: StepConfirmProps) => (
   <div className="space-y-4">
-    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Resumo da reserva</p>
+    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Resumo do Pedido</p>
 
-    <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
-      <div className="p-5 space-y-3 bg-stone-50/50">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="p-4 space-y-2 bg-gray-50/30">
         {items.map((item) => (
-          <div key={item.productId} className="flex justify-between items-center text-sm">
-            <span className="text-stone-600"><span className="font-bold text-stone-900">{item.quantity}x</span> {item.name}</span>
-            <span className="font-semibold text-stone-900">{fmt(item.price * item.quantity)}</span>
+          <div key={item.productId} className="flex justify-between items-baseline text-xs">
+            <span className="text-gray-500 font-medium">{item.quantity}x {item.name}</span>
+            <span className="font-bold text-navy-dark">{fmt(item.price * item.quantity)}</span>
           </div>
         ))}
       </div>
 
-      <div className="p-5 space-y-3 text-sm border-t border-stone-50">
-        <Row label="Nome" value={customerName} />
+      <div className="p-4 space-y-3 text-[11px] border-t border-gray-50">
+        <Row label="Cliente" value={customerName} />
         {customerPhone && <Row label="WhatsApp" value={customerPhone} />}
         <Row label="Pagamento" value="Na retirada" />
         
         {selectedCharity && (
-          <div className="flex justify-between">
-            <span className="text-stone-400">Instituição</span>
-            <span className="text-stone-900 font-medium flex items-center gap-1.5">
-              <Heart className="h-3 w-3 text-gold fill-gold" />
+          <div className="flex justify-between items-baseline">
+            <span className="text-gray-400 font-bold uppercase tracking-tighter">Instituição</span>
+            <span className="text-navy-dark font-bold uppercase tracking-tight">
               {charities.find((c) => c.id === selectedCharity)?.name}
             </span>
           </div>
         )}
         
         {appliedCoupon && (
-          <div className="flex justify-between">
-            <span className="text-stone-400">Cupom</span>
-            <span className="text-gold font-bold uppercase tracking-tight">{appliedCoupon.code}</span>
+          <div className="flex justify-between items-baseline">
+            <span className="text-gray-400 font-bold uppercase tracking-tighter">Cupom</span>
+            <span className="text-green-600 font-bold uppercase tracking-tight">{appliedCoupon.code}</span>
           </div>
         )}
         
         {notes && (
-          <div className="pt-2">
-            <p className="text-[10px] text-stone-400 uppercase font-bold tracking-widest mb-1">Notas</p>
-            <p className="text-stone-600 italic">"{notes}"</p>
+          <div className="pt-2 border-t border-gray-50 mt-2">
+            <p className="text-[9px] text-gray-400 uppercase font-bold tracking-widest mb-1">Observações</p>
+            <p className="text-gray-500 italic leading-relaxed text-[10px]">"{notes}"</p>
           </div>
         )}
       </div>
 
-      <div className="p-6 flex justify-between items-center bg-stone-900 shadow-inner">
-        <span className="text-stone-400 text-[10px] uppercase font-bold tracking-widest">Total final</span>
-        <span className="text-2xl font-bold text-white tracking-tight">{fmt(finalTotal)}</span>
+      <div className="p-4 flex justify-between items-center bg-gray-50 border-t border-gray-100">
+        <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Total a pagar</span>
+        <span className="text-lg font-bold text-navy-dark tracking-tight">{fmt(finalTotal)}</span>
       </div>
     </div>
   </div>
 );
 
 const Row = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex justify-between">
-    <span className="text-stone-400">{label}</span>
-    <span className="text-stone-900 font-medium">{value}</span>
+  <div className="flex justify-between items-baseline">
+    <span className="text-gray-400 font-bold uppercase tracking-tighter">{label}</span>
+    <span className="text-navy-dark font-bold uppercase tracking-tight">{value}</span>
   </div>
 );
 

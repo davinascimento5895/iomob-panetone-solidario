@@ -7,13 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Heart, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
-const CHART_COLORS = ["hsl(38, 80%, 55%)", "hsl(220, 60%, 25%)", "hsl(220, 40%, 40%)", "hsl(35, 85%, 40%)", "hsl(40, 70%, 65%)", "hsl(0, 60%, 50%)", "hsl(150, 50%, 40%)"];
+const CHART_COLORS = [
+  "hsl(220, 60%, 25%)", // Navy Dark
+  "hsl(220, 40%, 40%)", // Navy Muted
+  "hsl(220, 20%, 55%)", // Steel Gray
+  "hsl(220, 15%, 70%)", // Light Gray
+  "hsl(215, 30%, 35%)", // Deep Slate
+];
 
 const AdminCharities = () => {
   const queryClient = useQueryClient();
@@ -108,50 +114,68 @@ const AdminCharities = () => {
 
   return (
     <div className="animate-fade-in space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground">Instituições</h1>
-        <Button onClick={openCreate} className="bg-gold hover:bg-gold-dark text-primary font-semibold" size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Nova
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold text-navy-dark tracking-tight">Instituições</h1>
+          <p className="text-xs text-muted-foreground">Monitore o desempenho e repasses das parcerias</p>
+        </div>
+        <Button 
+          size="sm" 
+          className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all" 
+          onClick={openCreate}
+        >
+          <Plus className="h-4 w-4 mr-2" /> 
+          Nova Instituição
         </Button>
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card>
-          <CardContent className="p-3 sm:p-5">
-            <div className="flex items-center gap-2 mb-2">
-              <Heart className="h-4 w-4 text-gold" />
-              <span className="text-[10px] sm:text-xs text-muted-foreground">Pedidos Beneficentes</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card className="border-gray-100 shadow-sm bg-navy text-white overflow-hidden relative">
+          <CardContent className="p-5">
+            <p className="text-[10px] font-medium uppercase tracking-widest opacity-60">Pedidos Beneficentes</p>
+            <div className="flex items-center gap-3 mt-1">
+              <h2 className="text-2xl font-semibold tabular-nums text-white">{totalOrdersWithCharity}</h2>
+              <Heart className="h-4 w-4 text-white opacity-20" />
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-foreground">{totalOrdersWithCharity}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-3 sm:p-5">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-gold" />
-              <span className="text-[10px] sm:text-xs text-muted-foreground">Valor Beneficente</span>
+        
+        <Card className="border-gray-100 shadow-sm bg-white overflow-hidden relative">
+          <CardContent className="p-5">
+            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Valor Arrecadado</p>
+            <div className="flex items-center gap-2 mt-1">
+              <h2 className="text-2xl font-semibold text-navy-dark tabular-nums">R$ {totalRevenueWithCharity.toFixed(2).replace('.', ',')}</h2>
+              <TrendingUp className="h-4 w-4 text-green-500 opacity-30" />
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-foreground">R$ {totalRevenueWithCharity.toFixed(2)}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Chart */}
       {charityStats.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2 px-3 sm:px-6">
-            <CardTitle className="text-sm sm:text-base font-semibold">Pedidos por Instituição</CardTitle>
+        <Card className="border-gray-100 shadow-sm bg-white overflow-hidden">
+          <CardHeader className="pb-2 px-6 border-b border-gray-50 bg-gray-50/30">
+            <CardTitle className="text-xs font-bold text-navy-dark/40 uppercase tracking-widest">Volume de Pedidos por Instituição</CardTitle>
           </CardHeader>
-          <CardContent className="px-1 sm:px-6 pb-3">
-            <ChartContainer config={chartConfig} className="w-full h-[200px] sm:h-[250px]">
+          <CardContent className="p-6">
+            <ChartContainer config={chartConfig} className="w-full h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={charityStats} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40, 15%, 88%)" />
-                  <XAxis dataKey="name" tick={{ fontSize: 9 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                <BarChart data={charityStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(220, 20%, 95%)" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 10, fill: 'hsl(220, 20%, 60%)' }} 
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10, fill: 'hsl(220, 20%, 60%)' }} 
+                    axisLine={false}
+                    tickLine={false}
+                  />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="pedidos" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="pedidos" radius={[6, 6, 0, 0]} barSize={40}>
                     {charityStats.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
@@ -164,50 +188,77 @@ const AdminCharities = () => {
       )}
 
       {/* Charities list */}
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-4">
         {charities.map((c) => {
           const cOrders = orders.filter((o) => o.charity_id === c.id);
+          const cRevenue = cOrders.reduce((s, o) => s + Number(o.total), 0);
           return (
-            <Card key={c.id}>
-              <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <Card key={c.id} className={`border-gray-100 shadow-sm hover:shadow-md transition-all ${!c.active ? "opacity-50 grayscale-[0.5]" : ""}`}>
+              <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-gold flex-shrink-0" />
-                    <h3 className="font-medium text-foreground truncate">{c.name}</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gray-50 border border-gray-100">
+                      <Heart className="h-4 w-4 text-navy-dark/40" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-navy-dark tracking-tight">{c.name}</h3>
+                      <p className="text-[10px] text-gray-400 mt-0.5 italic line-clamp-1">{c.description || "Sem descrição detalhada"}</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{c.description || "Sem descrição"}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {cOrders.length} pedido(s) · R$ {cOrders.reduce((s, o) => s + Number(o.total), 0).toFixed(2)}
-                  </p>
+                  
+                  <div className="flex items-center gap-4 mt-4">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Pedidos</span>
+                      <span className="text-xs font-semibold text-navy-dark">{cOrders.length}</span>
+                    </div>
+                    <div className="w-[1px] h-6 bg-gray-100"></div>
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Arrecadação</span>
+                      <span className="text-xs font-semibold text-navy-dark">R$ {cRevenue.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Switch
-                    checked={c.active}
-                    onCheckedChange={(active) => toggleActive.mutate({ id: c.id, active })}
-                  />
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(c.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+
+                <div className="flex items-center gap-3 pt-4 sm:pt-0 border-t sm:border-none border-gray-50">
+                  <div className="flex items-center gap-2 mr-2">
+                    <span className="text-[10px] font-medium text-gray-400">Ativa</span>
+                    <Switch
+                      checked={c.active}
+                      onCheckedChange={(active) => toggleActive.mutate({ id: c.id, active })}
+                      className="data-[state=checked]:bg-navy"
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-navy hover:bg-navy/5" onClick={() => openEdit(c)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-300 hover:text-red-500 hover:bg-red-50" onClick={() => deleteMutation.mutate(c.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           );
         })}
         {charities.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">Nenhuma instituição cadastrada.</p>
+          <div className="col-span-full py-12 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+            <Heart className="h-8 w-8 text-gray-200 mx-auto mb-3" />
+            <p className="text-sm text-gray-400 italic">Nenhuma instituição cadastrada.</p>
+          </div>
         )}
       </div>
 
       {/* Create/Edit dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display">
-              {editing ? "Editar Instituição" : "Nova Instituição"}
+            <DialogTitle className="text-lg font-bold text-navy-dark tracking-tight">
+              {editing ? "Editar Instituição" : "Cadastrar Nova Instituição"}
             </DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              Configure as informações e parcerias com instituições beneficentes.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -223,10 +274,13 @@ const AdminCharities = () => {
               <Input value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://..." />
             </div>
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto">Cancelar</Button>
-            <Button onClick={handleSave} className="bg-gold hover:bg-gold-dark text-primary font-semibold w-full sm:w-auto">
-              {editing ? "Salvar" : "Criar"}
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+            <Button variant="ghost" onClick={() => setDialogOpen(false)} className="text-gray-400 hover:text-navy-dark">Cancelar</Button>
+            <Button 
+              onClick={handleSave} 
+              className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg px-8 shadow-sm transition-all w-full sm:w-auto"
+            >
+              {editing ? "Salvar Alterações" : "Criar Instituição"}
             </Button>
           </DialogFooter>
         </DialogContent>

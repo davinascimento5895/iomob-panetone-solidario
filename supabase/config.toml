@@ -1,1 +1,4 @@
-project_id = "haxxfatoqorpeqhimgaf"
+project_id = "ntuurqduimnksehqtfpv"
+
+[functions.club-auth]
+verify_jwt = false

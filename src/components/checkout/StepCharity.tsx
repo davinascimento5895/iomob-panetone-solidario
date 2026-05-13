@@ -14,43 +14,43 @@ interface StepCharityProps {
 
 const StepCharity = ({ charities, selectedCharity, setSelectedCharity }: StepCharityProps) => (
   <div className="space-y-4">
-    <div className="mb-4">
-      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Apoiar instituição</p>
-      <p className="text-xs text-stone-400 font-medium">Sua compra pode apoiar uma causa (opcional)</p>
+    <div className="mb-2 ml-0.5">
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apoiar Instituição</p>
+      <p className="text-[11px] text-gray-400 font-medium">Sua compra pode apoiar uma causa social (opcional)</p>
     </div>
 
     <div className="grid grid-cols-1 gap-2">
       <button
         onClick={() => setSelectedCharity(null)}
-        className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between ${
+        className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-center justify-between ${
           selectedCharity === null 
-          ? "border-stone-900 bg-stone-900 text-white shadow-lg shadow-stone-900/10" 
-          : "border-stone-100 bg-white text-stone-600 hover:border-stone-200"
+          ? "border-navy bg-navy/5 text-navy-dark ring-1 ring-navy/10" 
+          : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
         }`}
       >
-        <span className="text-sm font-semibold">Nenhuma em particular</span>
-        {selectedCharity === null && <div className="h-2 w-2 rounded-full bg-gold" />}
+        <span className="text-xs font-bold uppercase tracking-tight">Nenhuma em particular</span>
+        {selectedCharity === null && <div className="h-1.5 w-1.5 rounded-full bg-navy" />}
       </button>
 
       {charities.map((c) => (
         <button
           key={c.id}
           onClick={() => setSelectedCharity(c.id)}
-          className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${
+          className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-center gap-3 ${
             selectedCharity === c.id 
-            ? "border-stone-900 bg-white shadow-xl shadow-stone-200/50" 
-            : "border-stone-100 bg-white text-stone-600 hover:border-stone-200"
+            ? "border-navy bg-navy/5 text-navy-dark ring-1 ring-navy/10" 
+            : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
           }`}
         >
           <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <p className={`text-sm font-bold ${selectedCharity === c.id ? "text-stone-900" : "text-stone-600"}`}>
+            <div className="flex items-center justify-between mb-0.5">
+              <p className={`text-xs font-bold uppercase tracking-tight ${selectedCharity === c.id ? "text-navy-dark" : "text-gray-500"}`}>
                 {c.name}
               </p>
-              {selectedCharity === c.id && <Heart className="h-3 w-3 text-gold fill-gold" />}
+              {selectedCharity === c.id && <Heart className="h-3 w-3 text-navy fill-navy" />}
             </div>
             {c.description && (
-              <p className="text-xs text-stone-400 line-clamp-1 italic">{c.description}</p>
+              <p className="text-[10px] text-gray-400 line-clamp-1 italic">{c.description}</p>
             )}
           </div>
         </button>

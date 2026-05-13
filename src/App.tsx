@@ -30,10 +30,18 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     import("./integrations/supabase/client").then(({ supabase }) => {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!mounted) return;
-        setStatus(session ? "ok" : "redirect");
+        if (session) {
+          setStatus("ok");
+        } else {
+          // Check for manual club token
+          const clubToken = localStorage.getItem("solidario_club_token");
+          setStatus(clubToken ? "ok" : "redirect");
+        }
       }).catch(() => {
-        // If there's an error, redirect to login
-        if (mounted) setStatus("redirect");
+        if (mounted) {
+          const clubToken = localStorage.getItem("solidario_club_token");
+          setStatus(clubToken ? "ok" : "redirect");
+        }
       });
     }).catch(() => {
       // If there's an error importing, redirect to login
@@ -60,6 +68,8 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 
 const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Moderator = lazy(() => import("./pages/Moderator"));
 const ModeratorProfile = lazy(() => import("./pages/ModeratorProfile"));
@@ -135,6 +145,18 @@ const AuthRedirector = () => {
         // subscribe to auth changes (SIGNED_IN covers magic-link / oauth)
         const sub = supabase.auth.onAuthStateChange((_event, session) => {
           if (!session) return;
+          
+          // Decode JWT to check for club role
+          try {
+            const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+            if (payload.role === 'club') {
+              // If it's a club, we don't redirect to admin/moderator
+              return;
+            }
+          } catch (e) {
+            // ignore parse errors
+          }
+
           if (_event === "SIGNED_IN" || _event === "USER_UPDATED") {
             checkAndRedirect(session.user?.id);
           }
@@ -187,6 +209,8 @@ const AppLayout = () => {
             </Suspense>
           </>} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/change-password" element={<ChangePassword />} />
           <Route
             path="/checkout"
             element={

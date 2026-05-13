@@ -50,69 +50,69 @@ const StepPayment = ({
   setNotes,
   fmt,
 }: StepPaymentProps) => (
-  <div className="space-y-6 animate-fade-in">
+  <div className="space-y-5">
     {/* Form Info */}
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Nome completo</Label>
+        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Nome completo</Label>
         <Input 
           value={customerName} 
           onChange={(e) => setCustomerName(e.target.value)} 
-          className="rounded-2xl border-stone-100 bg-white h-12 px-5 shadow-sm focus-visible:ring-stone-400"
-          placeholder="Como devemos lhe chamar"
+          className="h-10 bg-white border-gray-100 rounded-lg text-sm focus:ring-navy/5"
+          placeholder="Seu nome completo"
         />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">WhatsApp</Label>
+        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">WhatsApp</Label>
         <Input 
           value={customerPhone} 
           onChange={(e) => setCustomerPhone(e.target.value)} 
-          className="rounded-2xl border-stone-100 bg-white h-12 px-5 shadow-sm focus-visible:ring-stone-400"
-          placeholder="(00) 00000-0000"
+          className="h-10 bg-white border-gray-100 rounded-lg text-sm focus:ring-navy/5"
+          placeholder="(11) 99999-9999"
         />
       </div>
     </div>
 
     {/* Payment method */}
     <div className="space-y-2">
-      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Pagamento</p>
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Método de Pagamento</p>
       {paymentOptions.map((opt) => (
         <button
           key={opt.id}
           onClick={() => !opt.disabled && setPaymentMethod(opt.id)}
           disabled={opt.disabled}
-          className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${
+          className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
             opt.disabled
-              ? "border-stone-50 bg-stone-50/50 opacity-40 cursor-not-allowed"
+              ? "border-gray-50 bg-gray-50/50 opacity-40 cursor-not-allowed"
               : paymentMethod === opt.id
-                ? "border-stone-900 bg-stone-900 text-white shadow-lg shadow-stone-900/10"
-                : "border-stone-100 bg-white text-stone-600 hover:border-stone-200"
+                ? "border-navy bg-navy/5 text-navy-dark ring-1 ring-navy/10"
+                : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
           }`}
         >
-          <opt.icon className={`h-4 w-4 ${paymentMethod === opt.id ? "text-gold" : "text-stone-300"}`} />
+          <div className={`p-2 rounded-lg ${paymentMethod === opt.id ? "bg-navy text-white" : "bg-gray-50 text-gray-400"}`}>
+            <opt.icon className="h-4 w-4" />
+          </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold">{opt.label}</p>
-            {opt.disabled && <p className="text-[10px] uppercase font-medium opacity-60">Em breve</p>}
+            <p className="text-xs font-bold uppercase tracking-tight">{opt.label}</p>
+            <p className="text-[10px] text-gray-400 font-medium">{opt.desc}</p>
           </div>
         </button>
       ))}
     </div>
 
     {/* Coupon */}
-    <div className="bg-white rounded-2xl p-5 border border-stone-100 shadow-sm space-y-3">
-      <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
-        Cupom de desconto
-      </p>
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Cupom de Desconto</p>
       {appliedCoupon ? (
-        <div className="flex items-center justify-between bg-stone-50 rounded-xl p-3 border border-stone-100">
-          <div>
-            <p className="text-sm font-bold text-stone-900">{appliedCoupon.code}</p>
-            <p className="text-[10px] font-bold text-gold uppercase tracking-tight">Desconto de {fmt(appliedCoupon.discount)} aplicado</p>
+        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-navy-dark uppercase tracking-widest">{appliedCoupon.code}</span>
+            <span className="text-[9px] text-green-600 font-bold uppercase">Desconto de {fmt(appliedCoupon.discount)}</span>
           </div>
           <button 
             type="button"
             onClick={() => setAppliedCoupon(null)}
-            className="h-8 w-8 text-stone-400 hover:text-red-500 transition-colors flex items-center justify-center"
+            className="h-7 w-7 text-gray-300 hover:text-destructive transition-colors flex items-center justify-center"
           >
             <X className="h-4 w-4" />
           </button>
@@ -123,13 +123,13 @@ const StepPayment = ({
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
             placeholder="CÓDIGO"
-            className="rounded-xl border-stone-100 uppercase text-xs font-bold tracking-widest h-10 px-4"
+            className="h-10 bg-white border-gray-100 rounded-lg text-xs font-bold uppercase tracking-widest px-4 flex-1"
           />
           <Button 
             type="button"
             onClick={onApplyCoupon} 
             disabled={validatingCoupon || !couponCode.trim()}
-            className="bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl h-10 px-4 text-xs font-bold transition-all shadow-none"
+            className="h-10 px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-none"
           >
             {validatingCoupon ? "..." : "Aplicar"}
           </Button>
@@ -139,12 +139,12 @@ const StepPayment = ({
 
     {/* Notes */}
     <div className="space-y-1.5">
-      <Label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1">Observações</Label>
+      <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Observações Adicionais</Label>
       <Textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        placeholder="Informação adicional para o seu pedido..."
-        className="rounded-2xl border-stone-100 bg-white shadow-sm resize-none focus-visible:ring-stone-400 min-h-[80px]"
+        placeholder="Informações adicionais para o seu pedido"
+        className="h-20 bg-white border-gray-100 rounded-xl text-sm shadow-none focus:ring-navy/5 resize-none p-3"
       />
     </div>
   </div>

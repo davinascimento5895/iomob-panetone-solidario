@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,14 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { CheckCircle2, Search, QrCode, UserCheck, XCircle } from "lucide-react";
+import { CheckCircle2, Search, QrCode, UserCheck, XCircle, Info } from "lucide-react";
 import { toast } from "sonner";
 
 const statusMap: Record<string, { label: string; className: string }> = {
-  pendente: { label: "Pendente", className: "bg-yellow-100 text-yellow-700" },
-  pronto: { label: "Pronto p/ Retirada", className: "bg-blue-100 text-blue-700" },
-  retirado: { label: "Retirado", className: "bg-green-100 text-green-700" },
-  cancelado: { label: "Cancelado", className: "bg-red-100 text-red-700" },
+  pendente: { label: "Pendente", className: "bg-gray-100 text-gray-500" },
+  pronto: { label: "Pronto p/ Retirada", className: "bg-gray-200 text-navy-dark" },
+  retirado: { label: "Retirado", className: "bg-navy-dark text-white" },
+  cancelado: { label: "Cancelado", className: "bg-gray-50 text-gray-300 line-through" },
 };
 
 const AdminOrders = () => {
@@ -42,38 +43,17 @@ const AdminOrders = () => {
     },
   });
 
-  const { data: orderItems = [] } = useQuery({
-    queryKey: ["admin-order-items", foundOrder?.id],
-    enabled: !!foundOrder,
-    queryFn: async () => {
-      const { data } = await supabase.from("order_items").select("*").eq("order_id", foundOrder.id);
-      return data || [];
-    },
-  });
-
-  // Fetch admin profiles for tracking
-  const adminIds = orders
-    .flatMap((o: any) => [o.paid_by, o.delivered_by])
-    .filter(Boolean)
-    .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
-
   const { data: adminProfiles = {} } = useQuery({
-    queryKey: ["admin-profiles", adminIds.join(",")],
-    enabled: adminIds.length > 0,
+    queryKey: ["admin-profiles", orders.length],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name").in("id", adminIds);
+      const ids = orders.flatMap((o: any) => [o.paid_by, o.delivered_by]).filter(Boolean);
+      if (ids.length === 0) return {};
+      const { data } = await supabase.from("profiles").select("id, full_name").in("id", ids);
       const map: Record<string, string> = {};
       (data || []).forEach((p: any) => { map[p.id] = p.full_name || p.id.slice(0, 8); });
       return map;
     },
   });
-
-  const getTrackingFields = (newStatus: string) => {
-    const now = new Date().toISOString();
-    if (newStatus === "pronto") return { paid_by: adminUserId, paid_at: now };
-    if (newStatus === "retirado") return { delivered_by: adminUserId, delivered_at: now };
-    return {};
-  };
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -82,32 +62,32 @@ const AdminOrders = () => {
         setCancelDialogOpen(true);
         throw new Error("__cancel_dialog__");
       }
-      const tracking = getTrackingFields(status);
+      const now = new Date().toISOString();
+      const tracking = status === "pronto" ? { paid_by: adminUserId, paid_at: now } : 
+                       status === "retirado" ? { delivered_by: adminUserId, delivered_at: now } : {};
+      
       await supabase.from("orders").update({ status, ...tracking }).eq("id", id);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-orders-all"] }),
     onError: (err) => {
       if (err.message !== "__cancel_dialog__") {
-        toast.error("Erro ao atualizar pedido. Tente novamente.");
+        toast.error("Erro ao atualizar pedido.");
       }
     },
   });
 
   const handleCancelConfirm = async () => {
-    if (!cancelOrderId || !cancelReason.trim()) {
-      toast.error("Informe o motivo do cancelamento");
-      return;
-    }
+    if (!cancelOrderId || !cancelReason.trim()) return;
     try {
       const { error } = await supabase.rpc("cancel_order", {
         p_order_id: cancelOrderId,
         p_reason: cancelReason.trim(),
       });
       if (error) throw error;
-      toast.success("Pedido cancelado", { description: "Estoque devolvido automaticamente." });
+      toast.success("Pedido cancelado.");
       queryClient.invalidateQueries({ queryKey: ["admin-orders-all"] });
     } catch (err: any) {
-      toast.error("Erro ao cancelar pedido. Tente novamente.");
+      toast.error("Erro ao cancelar.");
     } finally {
       setCancelDialogOpen(false);
       setCancelOrderId(null);
@@ -117,13 +97,10 @@ const AdminOrders = () => {
 
   const handlePickupSearch = async () => {
     const code = pickupCode.trim().toUpperCase();
-    if (code.length !== 6) {
-      toast.error("Código inválido", { description: "O código de retirada deve ter 6 caracteres." });
-      return;
-    }
+    if (code.length !== 6) return;
     const { data } = await supabase.from("orders").select("*").eq("pickup_code", code).single();
     if (!data) {
-      toast.error("Pedido não encontrado", { description: "Nenhum pedido com esse código." });
+      toast.error("Pedido não encontrado.");
       return;
     }
     setFoundOrder(data);
@@ -138,7 +115,7 @@ const AdminOrders = () => {
       delivered_by: adminUserId,
       delivered_at: now,
     }).eq("id", foundOrder.id);
-    toast.success("Retirada confirmada!", { description: `Pedido de ${foundOrder.customer_name} marcado como retirado.` });
+    toast.success("Retirada confirmada!");
     setPickupDialogOpen(false);
     setFoundOrder(null);
     setPickupCode("");
@@ -147,264 +124,166 @@ const AdminOrders = () => {
 
   const formatTrackingInfo = (userId: string | null, timestamp: string | null) => {
     if (!userId || !timestamp) return null;
-    const name = adminProfiles[userId] || userId.slice(0, 8) + "…";
+    const name = adminProfiles[userId] || userId.slice(0, 8);
     const date = new Date(timestamp).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-    return `${name} em ${date}`;
+    return `${name} (${date})`;
   };
 
   return (
-    <div className="animate-fade-in space-y-4">
-      <div className="flex flex-col gap-3">
-        <h1 className="text-2xl font-display font-bold text-foreground">Pedidos</h1>
-        <div className="flex gap-2">
-          <Input
-            id="pickupCode"
-            name="pickupCode"
-            placeholder="Código (6 letras)"
-            value={pickupCode}
-            onChange={(e) => setPickupCode(e.target.value.toUpperCase().slice(0, 6))}
-            className="flex-1 sm:flex-none sm:w-[200px] font-mono uppercase tracking-widest"
-            onKeyDown={(e) => e.key === "Enter" && handlePickupSearch()}
-          />
-          <Button onClick={handlePickupSearch} className="bg-gold hover:bg-gold-dark text-primary font-semibold flex-shrink-0">
-            <Search className="h-4 w-4 mr-1" /> Buscar
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-navy-dark tracking-tight">Pedidos</h1>
+          <p className="text-sm text-gray-500 mt-1">Gestão de vendas e validação de retiradas</p>
+        </div>
+        <div className="flex gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="CÓDIGO DE RETIRADA..."
+              value={pickupCode}
+              onChange={(e) => setPickupCode(e.target.value.toUpperCase().slice(0, 6))}
+              className="bg-white border-gray-100 rounded-xl shadow-sm pl-10 h-11 text-sm font-mono uppercase tracking-widest"
+              onKeyDown={(e) => e.key === "Enter" && handlePickupSearch()}
+            />
+          </div>
+          <Button onClick={handlePickupSearch} className="bg-navy-dark hover:bg-black text-white font-bold rounded-xl h-11 px-6 shadow-sm">
+            Validar
           </Button>
         </div>
       </div>
 
-      {/* Desktop table */}
-      <Card className="hidden md:block">
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left py-3 px-4 text-muted-foreground font-medium">Cliente</th>
-                <th className="text-left py-3 px-4 text-muted-foreground font-medium">Código</th>
-                <th className="text-left py-3 px-4 text-muted-foreground font-medium">Instituição</th>
-                <th className="text-left py-3 px-4 text-muted-foreground font-medium">Total</th>
-                <th className="text-left py-3 px-4 text-muted-foreground font-medium">Status</th>
-                <th className="text-left py-3 px-4 text-muted-foreground font-medium">Aprovações</th>
-                <th className="text-left py-3 px-4 text-muted-foreground font-medium">Data</th>
+      <Card className="border-gray-100 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gray-50 border-b border-gray-100 uppercase text-[10px] font-bold text-gray-400 tracking-widest">
+              <tr>
+                <th className="px-6 py-4">Cliente / Código</th>
+                <th className="px-6 py-4">Instituição</th>
+                <th className="px-6 py-4">Total</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Responsáveis</th>
+                <th className="px-6 py-4 text-right">Data</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {orders.map((order: any) => {
-                const s = statusMap[order.status] || { label: order.status, className: "bg-muted text-muted-foreground" };
+                const s = statusMap[order.status] || { label: order.status, className: "bg-gray-100 text-gray-400" };
                 const paidInfo = formatTrackingInfo(order.paid_by, order.paid_at);
                 const deliveredInfo = formatTrackingInfo(order.delivered_by, order.delivered_at);
                 return (
-                  <tr key={order.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="py-3 px-4 font-medium text-foreground">{order.customer_name}</td>
-                    <td className="py-3 px-4 font-mono text-xs tracking-wider text-foreground">{order.pickup_code || "N/A"}</td>
-                    <td className="py-3 px-4 text-xs text-muted-foreground">{order.charities?.name || "N/A"}</td>
-                    <td className="py-3 px-4 text-foreground">R$ {Number(order.total).toFixed(2)}</td>
-                    <td className="py-3 px-4">
+                  <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
+                    <td className="px-6 py-4">
+                      <p className="font-bold text-navy-dark uppercase">{order.customer_name}</p>
+                      <p className="text-[10px] font-mono text-gray-400 tracking-widest mt-0.5">{order.pickup_code || "---"}</p>
+                    </td>
+                    <td className="px-6 py-4 text-xs text-gray-500 uppercase font-medium">
+                      {order.charities?.name || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 font-bold text-navy-dark">
+                      R$ {Number(order.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-6 py-4">
                       <Select value={order.status} onValueChange={(v) => updateStatus.mutate({ id: order.id, status: v })}>
-                        <SelectTrigger className="h-7 w-[160px] text-xs">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${s.className}`}>{s.label}</span>
+                        <SelectTrigger className="h-9 w-44 rounded-xl border-gray-100 bg-white text-xs font-semibold shadow-sm overflow-hidden">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${s.className}`}>{s.label}</span>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-xl border-gray-100 shadow-xl">
                           {Object.entries(statusMap).map(([key, val]) => (
-                            <SelectItem key={key} value={key}>{val.label}</SelectItem>
+                            <SelectItem key={key} value={key} className="text-xs uppercase font-bold tracking-widest">{val.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="py-3 px-4 text-[11px] text-muted-foreground space-y-0.5">
+                    <td className="px-6 py-4 text-[9px] text-gray-400 uppercase tracking-tight leading-relaxed">
                       {paidInfo && (
-                        <div className="flex items-center gap-1">
-                          <UserCheck className="h-3 w-3 text-blue-500 flex-shrink-0" />
-                          <span>Pgto: {paidInfo}</span>
+                        <div className="flex items-center gap-1.5">
+                          <UserCheck className="h-3 w-3 text-gray-300" />
+                          <span>PGTO: {paidInfo}</span>
                         </div>
                       )}
                       {deliveredInfo && (
-                        <div className="flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3 text-green-500 flex-shrink-0" />
-                          <span>Entrega: {deliveredInfo}</span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <CheckCircle2 className="h-3 w-3 text-gray-300" />
+                          <span>ENTR: {deliveredInfo}</span>
                         </div>
                       )}
-                      {!paidInfo && !deliveredInfo && <span>—</span>}
+                      {!paidInfo && !deliveredInfo && <span>---</span>}
                     </td>
-                    <td className="py-3 px-4 text-muted-foreground text-xs">
+                    <td className="px-6 py-4 text-right text-xs text-gray-500">
                       {new Date(order.created_at).toLocaleDateString("pt-BR")}
                     </td>
                   </tr>
                 );
               })}
               {orders.length === 0 && (
-                <tr><td colSpan={7} className="py-12 text-center text-muted-foreground">Nenhum pedido registrado.</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400 font-medium">Nenhum pedido registrado.</td>
+                </tr>
               )}
             </tbody>
           </table>
-        </CardContent>
+        </div>
       </Card>
 
-      {/* Mobile cards */}
-      <div className="md:hidden space-y-3">
-        {orders.map((order: any) => {
-          const s = statusMap[order.status] || { label: order.status, className: "bg-muted text-muted-foreground" };
-          const paidInfo = formatTrackingInfo(order.paid_by, order.paid_at);
-          const deliveredInfo = formatTrackingInfo(order.delivered_by, order.delivered_at);
-          return (
-            <Card key={order.id}>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-medium text-foreground truncate">{order.customer_name}</p>
-                    <p className="font-mono text-xs tracking-wider text-muted-foreground">{order.pickup_code || "N/A"}</p>
-                    {order.charities?.name && (
-                      <p className="text-xs text-gold mt-0.5">♥ {order.charities.name}</p>
-                    )}
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${s.className}`}>
-                    {s.label}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <div>
-                    <span className="font-medium text-foreground">R$ {Number(order.total).toFixed(2)}</span>
-                    {Number(order.discount) > 0 && (
-                      <span className="ml-2 text-xs text-muted-foreground">-R$ {Number(order.discount).toFixed(2)}</span>
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</span>
-                </div>
-
-                {(paidInfo || deliveredInfo) && (
-                  <div className="bg-muted/50 rounded-lg p-2 space-y-1 text-[11px] text-muted-foreground">
-                    {paidInfo && (
-                      <div className="flex items-center gap-1">
-                        <UserCheck className="h-3 w-3 text-blue-500 flex-shrink-0" />
-                        <span>Pgto: {paidInfo}</span>
-                      </div>
-                    )}
-                    {deliveredInfo && (
-                      <div className="flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-green-500 flex-shrink-0" />
-                        <span>Entrega: {deliveredInfo}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <Select value={order.status} onValueChange={(v) => updateStatus.mutate({ id: order.id, status: v })}>
-                  <SelectTrigger className="h-8 text-xs w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(statusMap).map(([key, val]) => (
-                      <SelectItem key={key} value={key}>{val.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-          );
-        })}
-        {orders.length === 0 && (
-          <div className="py-12 text-center text-muted-foreground">Nenhum pedido registrado.</div>
-        )}
-      </div>
-
-      {/* Pickup validation dialog */}
       <Dialog open={pickupDialogOpen} onOpenChange={setPickupDialogOpen}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="rounded-2xl border-gray-100 shadow-2xl max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display flex items-center gap-2">
-              <QrCode className="h-5 w-5 text-gold" /> Validação de Retirada
+            <DialogTitle className="font-display font-bold text-navy-dark flex items-center gap-2 uppercase tracking-widest text-xs">
+              <QrCode className="h-4 w-4 text-gray-400" /> Validação de Retirada
             </DialogTitle>
           </DialogHeader>
           {foundOrder && (
-            <div className="space-y-4 py-2">
-              <div className="bg-muted rounded-lg p-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Código</span>
-                  <span className="font-mono font-bold tracking-widest text-foreground">{foundOrder.pickup_code}</span>
+            <div className="space-y-4 py-4">
+              <div className="bg-gray-50 rounded-2xl p-6 space-y-3 border border-gray-100">
+                <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Código</span>
+                  <span className="font-mono font-bold tracking-[0.2em] text-navy-dark text-lg">{foundOrder.pickup_code}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Cliente</span>
-                  <span className="font-medium text-foreground">{foundOrder.customer_name}</span>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cliente</span>
+                  <span className="font-bold text-navy-dark uppercase text-xs">{foundOrder.customer_name}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total</span>
-                  <span className="font-bold text-foreground">R$ {Number(foundOrder.total).toFixed(2)}</span>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total</span>
+                  <span className="font-bold text-navy-dark text-lg">R$ {Number(foundOrder.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Status Atual</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${(statusMap[foundOrder.status] || statusMap.pendente).className}`}>
-                    {(statusMap[foundOrder.status] || { label: foundOrder.status }).label}
-                  </span>
-                </div>
-                {foundOrder.paid_by && foundOrder.paid_at && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Pgto aprovado</span>
-                    <span className="text-xs text-foreground flex items-center gap-1">
-                      <UserCheck className="h-3 w-3 text-blue-500" />
-                      {formatTrackingInfo(foundOrder.paid_by, foundOrder.paid_at)}
-                    </span>
-                  </div>
-                )}
               </div>
-
-              {orderItems.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-2">Itens do Pedido:</p>
-                  <div className="bg-muted rounded-lg p-3 space-y-1">
-                    {orderItems.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span className="text-foreground">{item.quantity}x {item.product_name}</span>
-                        <span className="text-muted-foreground">R$ {(Number(item.unit_price) * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {foundOrder.status === "retirado" && (
-                <p className="text-sm text-green-600 font-medium text-center">✅ Este pedido já foi retirado.</p>
-              )}
-              {foundOrder.status === "cancelado" && (
-                <p className="text-sm text-red-500 font-medium text-center">❌ Este pedido foi cancelado.</p>
-              )}
             </div>
           )}
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setPickupDialogOpen(false)} className="w-full sm:w-auto">Fechar</Button>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setPickupDialogOpen(false)} className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Fechar</Button>
             {foundOrder && foundOrder.status !== "retirado" && foundOrder.status !== "cancelado" && (
-              <Button onClick={confirmPickup} className="bg-green-600 hover:bg-green-700 text-white font-semibold w-full sm:w-auto">
-                <CheckCircle2 className="h-4 w-4 mr-1.5" /> Confirmar Retirada
+              <Button onClick={confirmPickup} className="bg-navy-dark hover:bg-black text-white rounded-xl font-bold uppercase tracking-widest text-[10px] flex-1">
+                Confirmar Entrega
               </Button>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Cancel order dialog */}
-      <Dialog open={cancelDialogOpen} onOpenChange={(open) => { if (!open) { setCancelDialogOpen(false); setCancelOrderId(null); setCancelReason(""); } }}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="rounded-2xl border-gray-100 shadow-2xl max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-destructive" /> Cancelar Pedido
+            <DialogTitle className="font-display font-bold text-navy-dark flex items-center gap-2 uppercase tracking-widest text-xs text-gray-400">
+              <Info className="h-4 w-4" /> Cancelar Pedido
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground">Informe o motivo do cancelamento. O estoque será devolvido automaticamente.</p>
-            <div className="space-y-1.5">
-              <Label className="text-sm">Motivo *</Label>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Motivo</Label>
               <Textarea
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
-                placeholder="Ex: Cliente solicitou cancelamento"
-                rows={3}
+                placeholder="Ex: Erro no cadastro..."
+                className="rounded-xl border-gray-100 min-h-[100px] text-xs"
               />
             </div>
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => { setCancelDialogOpen(false); setCancelReason(""); }} className="w-full sm:w-auto">
-              Voltar
-            </Button>
-            <Button onClick={handleCancelConfirm} disabled={!cancelReason.trim()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full sm:w-auto">
-              <XCircle className="h-4 w-4 mr-1.5" /> Confirmar Cancelamento
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setCancelDialogOpen(false)} className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Voltar</Button>
+            <Button onClick={handleCancelConfirm} disabled={!cancelReason.trim()} className="bg-gray-200 hover:bg-gray-300 text-navy-dark rounded-xl font-bold uppercase tracking-widest text-[10px] flex-1">
+              Confirmar
             </Button>
           </DialogFooter>
         </DialogContent>

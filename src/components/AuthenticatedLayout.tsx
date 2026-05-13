@@ -32,19 +32,50 @@ const AuthenticatedLayout = () => {
   useEffect(() => {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/login", { state: { redirect: location.pathname } });
+      
+      if (session) {
+        setUserName(session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "");
+        setLoading(false);
         return;
       }
-      setUserName(session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "");
-      setLoading(false);
+
+      // Check for manual club token
+      const clubToken = localStorage.getItem("solidario_club_token");
+      const clubData = localStorage.getItem("solidario_club_data");
+      
+      if (clubToken && clubData) {
+        try {
+          const parsedData = JSON.parse(clubData);
+          
+          // Sync token with Supabase client
+          await supabase.auth.setSession({
+            access_token: clubToken,
+            refresh_token: "",
+          });
+
+          setUserName(parsedData.name || "Clube");
+          setLoading(false);
+          return;
+        } catch (e) {
+          // Silent error for better UX
+        }
+      }
+
+      navigate("/login", { state: { redirect: location.pathname }, replace: true });
     };
     check();
 
     // Redireciona imediatamente se sessão expirar ou usuário fizer logout em outra aba
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
-        navigate("/login", { replace: true });
+        // Antes de expulsar, verifica se não é um clube logado manualmente
+        const clubToken = localStorage.getItem("solidario_club_token");
+        if (!clubToken) {
+          console.log("Auth state change: No session and no club token. Redirecting to login...");
+          navigate("/login", { replace: true });
+        } else {
+          console.log("Auth state change: No session but club token exists. Staying put.");
+        }
       }
     });
     return () => subscription.unsubscribe();
@@ -148,16 +179,16 @@ const AuthenticatedLayout = () => {
   return (
     <div className="min-h-screen bg-background flex w-full">
       {/* Sidebar branca */}
-      <aside className="sticky top-0 h-screen flex flex-col bg-white border-r border-gray-200 w-56">
-        {/* Logo — visível sobre fundo branco */}
-        <div className="flex items-center h-16 border-b border-gray-200 px-4">
-          <Link to="/app/produtos" className="flex items-center gap-2.5">
-            <img src={rotaryLogo} alt="Rotary" className="h-9" />
+      <aside className="sticky top-0 h-screen flex flex-col bg-white border-r border-gray-100 w-52 shadow-sm z-50">
+        {/* Logo */}
+        <div className="flex items-center h-14 border-b border-gray-50 px-4">
+          <Link to="/app/produtos" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src={rotaryLogo} alt="Rotary" className="h-7" />
           </Link>
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 py-3 px-2 space-y-0.5">
+        <nav className="flex-1 py-3 px-2 space-y-1">
           {navItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
@@ -165,16 +196,16 @@ const AuthenticatedLayout = () => {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-xs font-medium ${
                   active
-                    ? "bg-gold/10 text-gold-dark"
-                    : "text-navy-dark/55 hover:text-navy-dark hover:bg-gray-100"
+                    ? "bg-gray-50 text-navy-dark border border-gray-100 shadow-sm"
+                    : "text-gray-400 hover:text-navy-dark hover:bg-gray-50"
                 }`}
               >
                 <div className="relative flex-shrink-0">
-                  <Icon className="h-4.5 w-4.5" />
+                  <Icon className={`h-4 w-4 ${active ? "text-gold-dark" : ""}`} />
                   {item.href === "/app/carrinho" && totalItems > 0 && (
-                    <span className="absolute -top-1.5 -right-2.5 bg-gold text-navy-dark text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1.5 bg-gold text-white text-[8px] font-bold h-3 w-3 rounded-full flex items-center justify-center shadow-sm">
                       {totalItems}
                     </span>
                   )}
@@ -186,10 +217,10 @@ const AuthenticatedLayout = () => {
         </nav>
 
         {/* Logout */}
-        <div className="p-2 border-t border-gray-200">
+        <div className="p-2 border-t border-gray-50">
           <LogoutConfirm onConfirm={handleLogout}>
-            <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-navy-dark/40 hover:text-navy-dark hover:bg-gray-100 transition-colors w-full">
-              <LogOut className="h-4.5 w-4.5 flex-shrink-0" />
+            <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-gray-400 hover:text-destructive hover:bg-destructive/5 transition-all w-full">
+              <LogOut className="h-4 w-4 flex-shrink-0" />
               <span>Sair</span>
             </button>
           </LogoutConfirm>
@@ -197,18 +228,19 @@ const AuthenticatedLayout = () => {
       </aside>
 
       {/* Conteúdo principal */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header desktop — consistente com sidebar */}
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
-          <div className="flex items-center justify-between px-6 h-16">
-            <h1 className="text-base font-semibold text-navy-dark">{currentTitle}</h1>
+      <div className="flex-1 flex flex-col min-w-0 bg-gray-50/20">
+        {/* Header desktop */}
+        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between px-6 h-14">
+            <h1 className="text-sm font-semibold text-navy-dark tracking-tight">{currentTitle}</h1>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-navy-dark/50">
-                Olá, <span className="font-semibold text-navy-dark">{userName.split(" ")[0]}</span>
+              <span className="text-[11px] text-gray-400">
+                Usuário: <span className="font-semibold text-navy-dark">{userName.split(" ")[0]}</span>
               </span>
+              <div className="h-4 w-[1px] bg-gray-100" />
               <LogoutConfirm onConfirm={handleLogout}>
-                <button className="text-sm flex items-center gap-1.5 text-navy-dark/40 hover:text-navy-dark transition-colors">
-                  <LogOut className="h-4 w-4" />
+                <button className="text-[11px] flex items-center gap-1 text-gray-400 hover:text-navy-dark transition-colors">
+                  <LogOut className="h-3.5 w-3.5" />
                   Sair
                 </button>
               </LogoutConfirm>

@@ -26,112 +26,95 @@ const OrderComplete = ({ pickupCode, items, total, discount, charityName, fmt }:
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-8 bg-[#FAFAFA]">
+    <main className="min-h-screen flex items-center justify-center px-4 py-8 bg-gray-50/50">
       <div className="w-full max-w-md">
-        <Card className="border-none shadow-2xl shadow-stone-200 rounded-[2.5rem] overflow-hidden bg-white">
+        <Card className="border border-gray-100 shadow-sm rounded-xl overflow-hidden bg-white">
           <CardContent className="p-8 text-center space-y-6">
-            <div className="h-20 w-20 rounded-full bg-stone-50 flex items-center justify-center mx-auto mb-2">
-              <CheckCircle2 className="h-10 w-10 text-gold" />
+            <div className="h-16 w-16 rounded-full bg-green-50 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-display font-bold text-stone-900">Reserva confirmada</h2>
-              <p className="text-stone-400 text-sm mt-2">Apresente este código no local de retirada</p>
+              <h2 className="text-xl font-bold text-navy-dark uppercase tracking-tight">Reserva Confirmada</h2>
+              <p className="text-gray-400 text-xs mt-1 uppercase tracking-widest font-medium">Apresente este código no local de retirada</p>
             </div>
 
-            <div className="bg-stone-50 rounded-3xl p-8 border border-stone-100 relative group">
-              <p className="text-4xl font-mono font-bold tracking-[0.2em] text-stone-900">{pickupCode}</p>
+            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 relative">
+              <p className="text-3xl font-mono font-bold tracking-[0.2em] text-navy-dark">{pickupCode}</p>
               <button
                 onClick={handleCopy}
-                className="mt-4 text-[10px] uppercase tracking-widest font-bold text-stone-400 hover:text-stone-900 flex items-center gap-2 mx-auto transition-all"
+                className="mt-4 text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-navy-dark flex items-center gap-2 mx-auto transition-all"
               >
-                {copied ? <><Check className="h-3 w-3 text-gold" /> Copiado</> : <><Copy className="h-3 w-3" /> Copiar código</>}
+                {copied ? <><Check className="h-3.5 w-3.5 text-green-600" /> Copiado</> : <><Copy className="h-3.5 w-3.5" /> Copiar Código</>}
               </button>
             </div>
 
             <div className="space-y-4 text-left pt-2">
               <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-2xl bg-stone-50 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="h-5 w-5 text-stone-400" />
+                <div className="h-9 w-9 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="h-4.5 w-4.5 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-stone-900">Ponto de retirada</p>
-                  <p className="text-stone-400 text-xs mt-0.5">Rotary Club Connect</p>
+                  <p className="text-xs font-bold text-navy-dark uppercase tracking-tight">Ponto de Retirada</p>
+                  <p className="text-gray-400 text-[11px] font-medium uppercase tracking-tighter">Rotary Club Connect</p>
                 </div>
               </div>
               
               <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-2xl bg-stone-50 flex items-center justify-center flex-shrink-0">
-                  <Clock className="h-5 w-5 text-stone-400" />
+                <div className="h-9 w-9 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-4.5 w-4.5 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-stone-900">Data e horário</p>
-                  <p className="text-stone-400 text-xs mt-0.5">As opções serão enviadas ao seu e-mail</p>
+                  <p className="text-xs font-bold text-navy-dark uppercase tracking-tight">Data e Horário</p>
+                  <p className="text-gray-400 text-[11px] font-medium uppercase tracking-tighter">Informações enviadas ao seu e-mail</p>
                 </div>
               </div>
             </div>
 
-            <div className="pt-6 border-t border-stone-50 space-y-3">
-              <Link to="/meus-pedidos" className="block w-full">
-                <Button className="w-full bg-stone-900 hover:bg-stone-800 text-white h-14 rounded-2xl transition-all shadow-lg shadow-stone-900/10 font-bold">
-                  Ver meus pedidos
+            <div className="pt-6 border-t border-gray-50 space-y-2.5 text-left">
+              <div className="flex justify-between text-[11px]">
+                <span className="text-gray-400 font-bold uppercase tracking-tighter">Subtotal</span>
+                <span className="text-navy-dark font-bold uppercase tracking-tight">{fmt(subtotal)}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-gray-400 font-bold uppercase tracking-tighter">Desconto</span>
+                  <span className="text-green-600 font-bold uppercase tracking-tight">-{fmt(discount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-[11px]">
+                <span className="text-gray-400 font-bold uppercase tracking-tighter">Pagamento</span>
+                <span className="text-navy-dark font-bold uppercase tracking-tight">Na Retirada</span>
+              </div>
+              {charityName && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-gray-400 font-bold uppercase tracking-tighter">Instituição</span>
+                  <span className="text-navy-dark font-bold uppercase tracking-tight">{charityName}</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-2 border-t border-gray-50 mt-2">
+                <span className="text-xs font-bold text-navy-dark uppercase tracking-tight">Total</span>
+                <span className="text-base font-bold text-navy-dark">{fmt(total)}</span>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-gray-50 space-y-2">
+              <Link to="/app/pedidos" className="block w-full">
+                <Button className="w-full bg-navy hover:bg-navy-dark text-white h-11 rounded-lg transition-all font-bold uppercase tracking-widest text-[10px]">
+                  Ver Meus Pedidos
                 </Button>
               </Link>
-              <Link to="/" className="block w-full">
-                <Button variant="ghost" className="w-full h-12 text-stone-400 hover:text-stone-900 hover:bg-transparent text-sm">
-                  Voltar ao início
+              <Link to="/app/produtos" className="block w-full">
+                <Button variant="ghost" className="w-full h-10 text-gray-400 hover:text-navy-dark hover:bg-transparent text-[10px] font-bold uppercase tracking-widest">
+                  Continuar Comprando
                 </Button>
               </Link>
             </div>
           </CardContent>
         </Card>
         
-        <p className="mt-8 text-center text-stone-300 text-[10px] uppercase font-bold tracking-widest">
+        <p className="mt-8 text-center text-gray-300 text-[9px] uppercase font-bold tracking-[0.2em]">
           Obrigado por apoiar esta causa
         </p>
-      </div>
-    </main>
-  );
-};
-
-            <div className="text-left border-t border-border pt-3 space-y-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-foreground">{fmt(subtotal)}</span>
-              </div>
-              {discount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Desconto</span>
-                  <span className="text-green-600">-{fmt(discount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Pagamento</span>
-                <span className="text-foreground">Na retirada</span>
-              </div>
-              {charityName && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Instituição</span>
-                  <span className="text-foreground flex items-center gap-1">
-                    <Heart className="h-3 w-3 text-gold" /> {charityName}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between pt-2 border-t border-border">
-                <span className="font-display font-bold text-foreground">Total</span>
-                <span className="font-bold text-gold text-lg">{fmt(total)}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2 pt-1">
-              <Link to="/app/pedidos">
-                <Button className="w-full bg-gold hover:bg-gold-dark text-primary font-semibold">Ver Meus Pedidos</Button>
-              </Link>
-              <Link to="/app/produtos">
-                <Button variant="outline" className="w-full">Continuar Comprando</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </main>
   );

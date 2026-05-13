@@ -39,76 +39,89 @@ const AppPedidos = () => {
 
   if (orders.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="text-center">
-          <Package className="h-14 w-14 text-muted-foreground/30 mx-auto mb-4" />
-          <h2 className="text-lg font-display font-bold text-foreground mb-2">Nenhum pedido</h2>
-          <p className="text-muted-foreground text-sm mb-6">Você ainda não fez nenhum pedido</p>
-          <Link to="/app/produtos">
-            <Button className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl">
-              Ver Produtos
-            </Button>
-          </Link>
+      <div className="flex-1 min-h-screen bg-gray-50/50 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="h-16 w-16 bg-white border border-gray-100 rounded-xl flex items-center justify-center mx-auto shadow-sm">
+            <Package className="h-8 w-8 text-gray-300" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-sm font-bold text-navy-dark uppercase tracking-widest">Nenhum pedido</h2>
+            <p className="text-gray-400 text-[10px] font-medium uppercase tracking-widest">Você ainda não realizou nenhum pedido</p>
+          </div>
+          <Button asChild className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg h-10 px-8 shadow-sm transition-all active:scale-[0.98]">
+            <Link to="/app/produtos" className="uppercase tracking-widest text-[10px]">Ver Produtos</Link>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-3 md:p-6 max-w-3xl mx-auto flex flex-col gap-3">
-      {orders.map((order: any) => {
-        const sc = statusConfig[order.status] || statusConfig.pendente;
-        const StatusIcon = sc.icon;
-        const date = new Date(order.created_at);
-        const formattedDate = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-        const formattedTime = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    <div className="p-3 md:p-5 pb-24 md:pb-5 min-h-screen bg-gray-50/50">
+      <div className="max-w-3xl mx-auto space-y-3">
+        {orders.map((order: any) => {
+          const sc = statusConfig[order.status] || statusConfig.pendente;
+          const StatusIcon = sc.icon;
+          const date = new Date(order.created_at);
+          const formattedDate = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+          const formattedTime = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-        return (
-          <Card key={order.id} className="overflow-hidden">
-            <CardContent className="p-0">
-              {/* Header */}
-              <div className="flex items-center justify-between p-3 bg-muted/30 border-b border-border">
-                <div className="flex items-center gap-2.5">
-                  <div className="bg-gold/10 p-1.5 rounded-lg">
-                    <Package className="h-4 w-4 text-gold" />
+          return (
+            <Card key={order.id} className="overflow-hidden border-gray-100 shadow-sm rounded-xl bg-white">
+              <CardContent className="p-0">
+                {/* Header */}
+                <div className="flex items-center justify-between p-3 bg-white border-b border-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gray-50 p-2 rounded-lg">
+                      <Package className="h-4 w-4 text-navy-dark" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Código de Retirada</p>
+                      <p className="font-mono font-bold text-navy-dark tracking-widest text-sm">{order.pickup_code || "---"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground leading-none">Retirada</p>
-                    <p className="font-mono font-bold text-foreground tracking-wider text-sm">{order.pickup_code || "N/A"}</p>
+                  <div className={`flex items-center gap-1.5 ${sc.color.split(' ')[1]} font-bold uppercase tracking-widest text-[9px]`}>
+                    <StatusIcon className="h-3 w-3" />
+                    {sc.label}
                   </div>
                 </div>
-                <Badge className={`${sc.color} border font-semibold gap-1 text-[10px] px-1.5 py-0.5`}>
-                  <StatusIcon className="h-3 w-3" />
-                  {sc.label}
-                </Badge>
-              </div>
 
-              {/* Items */}
-              <div className="p-3 space-y-1">
-                {order.order_items?.map((item: any) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-foreground">{item.quantity}x {item.product_name}</span>
-                    <span className="text-muted-foreground">
-                      R$ {(Number(item.unit_price) * item.quantity).toFixed(2).replace(".", ",")}
+                {/* Items */}
+                <div className="p-4 space-y-2 bg-white">
+                  {order.order_items?.map((item: any) => (
+                    <div key={item.id} className="flex justify-between items-baseline">
+                      <span className="text-[11px] text-navy-dark font-medium">{item.quantity}x {item.product_name}</span>
+                      <span className="text-[11px] text-gray-400 font-bold uppercase tracking-tighter">
+                        R$ {(Number(item.unit_price) * item.quantity).toFixed(2).replace(".", ",")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gray-50/30 border-t border-gray-100">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                      {formattedDate} • {formattedTime}
                     </span>
+                    {order.charities?.name && (
+                      <span className="text-[9px] text-navy-dark/60 font-bold uppercase tracking-widest">
+                        Apoio: {order.charities.name}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-muted/10">
-                <span className="text-[10px] text-muted-foreground">
-                  {formattedDate} {formattedTime}
-                  {order.charities?.name && <span className="ml-1.5">· ❤️ {order.charities.name}</span>}
-                </span>
-                <p className="font-display font-bold text-foreground text-sm">
-                  R$ {Number(order.total).toFixed(2).replace(".", ",")}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+                  <div className="text-right">
+                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Total</p>
+                    <p className="font-bold text-navy-dark text-base">
+                      R$ {Number(order.total).toFixed(2).replace(".", ",")}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };

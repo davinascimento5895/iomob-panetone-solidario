@@ -35,71 +35,25 @@
     --radius: 0.75rem;
 
     --gold: 38 80% 55%;
-    --gold-light: 40 70% 75%;
-    --gold-dark: 35 85% 40%;
     --navy: 220 60% 25%;
-    --navy-light: 220 40% 40%;
     --navy-dark: 220 70% 15%;
-    --cream: 40 33% 97%;
-    --cream-dark: 40 20% 92%;
-    --warm-white: 40 50% 99%;
-
-    --sidebar-background: 220 60% 25%;
-    --sidebar-foreground: 40 33% 97%;
-    --sidebar-primary: 38 80% 55%;
-    --sidebar-primary-foreground: 220 30% 15%;
-    --sidebar-accent: 220 40% 35%;
-    --sidebar-accent-foreground: 40 33% 97%;
-    --sidebar-border: 220 50% 30%;
-    --sidebar-ring: 38 80% 55%;
-    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  }
-
-  .dark {
-    --background: 220 30% 8%;
-    --foreground: 40 33% 95%;
-
-    --card: 220 30% 12%;
-    --card-foreground: 40 33% 95%;
-
-    --popover: 220 30% 12%;
-    --popover-foreground: 40 33% 95%;
-
-    --primary: 38 80% 55%;
-    --primary-foreground: 220 30% 10%;
-
-    --secondary: 220 40% 20%;
-    --secondary-foreground: 40 33% 95%;
-
-    --muted: 220 20% 18%;
-    --muted-foreground: 40 15% 60%;
-
-    --accent: 38 70% 45%;
-    --accent-foreground: 40 33% 95%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 38 80% 55%;
-    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-    --radius: 0.75rem;
+    
+    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-gray-100;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-gray-50/30 text-navy-dark font-sans antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Montserrat', sans-serif;
-    font-weight: 800;
+    @apply font-bold text-navy-dark tracking-tight;
   }
 }
 
@@ -112,37 +66,18 @@
     font-family: 'Montserrat', sans-serif;
   }
 
-  .gradient-gold {
-    background: hsl(var(--gold));
+  .shadow-elegant {
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
   }
 
   .gradient-navy {
-    background: hsl(var(--navy));
+    background: linear-gradient(135deg, hsl(220, 70%, 15%) 0%, hsl(220, 60%, 25%) 100%);
   }
 
-  .gradient-hero {
-    background: hsl(var(--navy-dark));
-  }
-
-  .text-gradient-gold {
-    color: hsl(var(--gold));
-  }
-
-  .shadow-gold {
-    box-shadow: none;
-  }
-
-  .shadow-elegant {
-    box-shadow: none;
-  }
-
-  /* Remove default Tailwind shadows for a flatter, cleaner UI */
-  .shadow,
-  .shadow-sm,
-  .shadow-md,
-  .shadow-lg,
-  .shadow-xl {
-    box-shadow: none !important;
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .safe-area-bottom {

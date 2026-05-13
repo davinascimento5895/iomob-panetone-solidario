@@ -5,15 +5,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, ArrowUpRight, ArrowDownRight, RotateCcw } from "lucide-react";
+import { Plus, ArrowUpRight, ArrowDownRight, RotateCcw, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const AdminStockMovements = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ product_id: "", type: "entry", quantity: 0, reason: "" });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [form, setForm] = useState({ product_id: "", type: "entrada", quantity: 1, reason: "" });
   const queryClient = useQueryClient();
 
   const { data: products = [] } = useQuery({
@@ -48,7 +49,7 @@ const AdminStockMovements = () => {
 
       const product = products.find((p) => p.id === form.product_id);
       if (product) {
-        const delta = form.type === "entry" ? form.quantity : form.type === "exit" ? -form.quantity : 0;
+        const delta = form.type === "entrada" ? form.quantity : form.type === "saida" ? -form.quantity : 0;
         const newStock = Math.max(0, product.stock + delta);
         await supabase.from("products").update({ stock: newStock }).eq("id", form.product_id);
       }
@@ -56,76 +57,163 @@ const AdminStockMovements = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stock-movements"] });
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      toast.success("Movimentação registrada!");
+      toast.success("Movimentação registrada com sucesso!");
       setDialogOpen(false);
-      setForm({ product_id: "", type: "entry", quantity: 0, reason: "" });
+      setForm({ product_id: "", type: "entrada", quantity: 1, reason: "" });
     },
-    onError: () => toast.error("Erro ao registrar movimentação."),
+    onError: (err: any) => {
+      console.error("Stock movement error:", err);
+      toast.error(`Erro: ${err.message || "Não foi possível registrar a movimentação."}`);
+    },
   });
 
-  const typeLabel = (t: string) => t === "entry" ? "Entrada" : t === "exit" ? "Saída" : "Ajuste";
-  const typeIcon = (t: string) => t === "entry" ? <ArrowUpRight className="h-4 w-4 text-green-600" /> : t === "exit" ? <ArrowDownRight className="h-4 w-4 text-red-500" /> : <RotateCcw className="h-4 w-4 text-blue-500" />;
+  const typeLabel = (t: string) => t === "entrada" ? "Entrada" : t === "saida" ? "Saída" : "Ajuste";
+  const typeIcon = (t: string) => t === "entrada" ? <ArrowUpRight className="h-3 w-3" /> : t === "saida" ? <ArrowDownRight className="h-3 w-3" /> : <RotateCcw className="h-3 w-3" />;
+
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const stats = {
+    total: products.reduce((acc, p) => acc + (p.stock || 0), 0),
+    entriesToday: movements
+      .filter(m => m.type === 'entrada' && new Date(m.created_at).toDateString() === new Date().toDateString())
+      .reduce((acc, m) => acc + (m.quantity || 0), 0),
+    exitsToday: movements
+      .filter(m => m.type === 'saida' && new Date(m.created_at).toDateString() === new Date().toDateString())
+      .reduce((acc, m) => acc + (m.quantity || 0), 0),
+  };
 
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground">Estoque</h1>
-        <Button size="sm" className="bg-gold hover:bg-gold-dark text-primary font-semibold" onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Nova Movimentação</span><span className="sm:hidden">Novo</span>
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold text-navy-dark tracking-tight">Estoque</h1>
+          <p className="text-xs text-muted-foreground">Gerenciamento de entrada e saída de produtos</p>
+        </div>
+        <Button 
+          size="sm" 
+          className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all" 
+          onClick={() => setDialogOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" /> 
+          <span className="hidden sm:inline">Nova Movimentação</span>
+          <span className="sm:hidden">Novo</span>
         </Button>
       </div>
 
-      {/* Current stock overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {products.map((p) => (
-          <Card key={p.id}>
-            <CardContent className="p-3 sm:p-4 flex items-center justify-between">
-              <div className="min-w-0">
-                <p className="font-medium text-foreground text-sm truncate">{p.name}</p>
-                <p className="text-xs text-muted-foreground">{p.weight || "N/A"}</p>
+      {/* Dashboard Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="border-gray-100 shadow-sm bg-navy text-white overflow-hidden relative">
+          <CardContent className="p-5">
+            <p className="text-[10px] font-medium uppercase tracking-widest opacity-60">Total em Estoque</p>
+            <h2 className="text-2xl font-semibold tabular-nums mt-1 text-white">{stats.total} <span className="text-[10px] font-normal opacity-50 uppercase tracking-tighter">unidades</span></h2>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-gray-100 shadow-sm bg-white overflow-hidden relative">
+          <CardContent className="p-5">
+            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Entradas (Hoje)</p>
+            <div className="flex items-center gap-2 mt-1">
+              <h2 className="text-2xl font-semibold text-navy-dark tabular-nums">+{stats.entriesToday}</h2>
+              <ArrowUpRight className="h-4 w-4 text-green-500 opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-100 shadow-sm bg-white overflow-hidden relative">
+          <CardContent className="p-5">
+            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Saídas (Hoje)</p>
+            <div className="flex items-center gap-2 mt-1">
+              <h2 className="text-2xl font-semibold text-navy-dark tabular-nums">-{stats.exitsToday}</h2>
+              <ArrowDownRight className="h-4 w-4 text-red-400 opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Product Search & List */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
+              placeholder="Buscar produto..." 
+              className="pl-9 h-10 border-gray-100 bg-white shadow-sm text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+            {filteredProducts.map((p) => (
+              <Card key={p.id} className="border-gray-100 shadow-sm hover:border-navy/10 transition-all cursor-default">
+                <CardContent className="p-3 flex items-center justify-between">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-medium text-gray-400 uppercase tracking-wider">{p.weight || "N/A"}</p>
+                    <p className="text-sm font-medium text-navy-dark truncate leading-tight">{p.name}</p>
+                  </div>
+                  <div className={`text-right flex-shrink-0 ml-3 px-2.5 py-1 rounded-lg min-w-[45px] shadow-sm ${p.stock <= 10 ? "bg-red-500" : "bg-navy"}`}>
+                    <p className="text-sm font-semibold tabular-nums text-white">{p.stock}</p>
+                    <p className="text-[8px] font-medium text-white/70 uppercase tracking-tighter">un.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {filteredProducts.length === 0 && (
+              <div className="py-12 text-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                <p className="text-xs text-gray-400 font-medium italic">Nenhum produto encontrado.</p>
               </div>
-              <div className="text-right flex-shrink-0 ml-2">
-                <p className={`text-lg font-bold ${p.stock <= 10 ? "text-destructive" : "text-foreground"}`}>{p.stock}</p>
-                <p className="text-[10px] text-muted-foreground">un.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Detailed History */}
+        <div className="lg:col-span-8">
+          <Card className="border-gray-100 shadow-sm overflow-hidden h-full">
+            <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-3 flex flex-row items-center justify-between">
+              <CardTitle className="text-xs font-bold text-navy-dark/60 uppercase tracking-widest">Atividade Recente</CardTitle>
+              <RotateCcw className="h-3 w-3 text-gray-300" />
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50/30">
+                    <tr className="border-b border-gray-100">
+                      <th className="text-left py-3 px-4 text-navy-dark/40 font-medium text-[10px] uppercase tracking-wider">Operação</th>
+                      <th className="text-left py-3 px-4 text-navy-dark/40 font-medium text-[10px] uppercase tracking-wider">Produto</th>
+                      <th className="text-left py-3 px-4 text-navy-dark/40 font-medium text-[10px] uppercase tracking-wider text-right">Qtd</th>
+                      <th className="text-left py-3 px-4 text-navy-dark/40 font-medium text-[10px] uppercase tracking-wider">Referência / Motivo</th>
+                      <th className="text-left py-3 px-4 text-navy-dark/40 font-medium text-[10px] uppercase tracking-wider text-right">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {movements.map((m: any) => (
+                      <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium uppercase tracking-widest ${
+                            m.type === 'entrada' ? 'bg-green-50 text-green-700' : 
+                            m.type === 'saida' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'
+                          }`}>
+                            {typeIcon(m.type)} {typeLabel(m.type)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-navy-dark font-medium text-xs">{m.products?.name || "N/A"}</td>
+                        <td className="py-3 px-4 font-medium text-navy-dark tabular-nums text-right">{m.type === 'saida' ? '-' : '+'}{m.quantity}</td>
+                        <td className="py-3 px-4 text-gray-400 text-[11px] font-normal italic max-w-[200px] truncate">{m.reason || "—"}</td>
+                        <td className="py-3 px-4 text-gray-400 text-[9px] font-medium text-right">{new Date(m.created_at).toLocaleDateString("pt-BR")}</td>
+                      </tr>
+                    ))}
+                    {movements.length === 0 && (
+                      <tr><td colSpan={5} className="py-24 text-center text-gray-300 text-xs italic">Nenhuma atividade registrada no período.</td></tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>
-        ))}
+        </div>
       </div>
-
-      {/* Movement history - Desktop table */}
-      <Card className="hidden md:block">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Histórico de Movimentações</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-2 px-2 text-muted-foreground font-medium text-xs">Tipo</th>
-                <th className="text-left py-2 px-2 text-muted-foreground font-medium text-xs">Produto</th>
-                <th className="text-left py-2 px-2 text-muted-foreground font-medium text-xs">Qtd</th>
-                <th className="text-left py-2 px-2 text-muted-foreground font-medium text-xs">Motivo</th>
-                <th className="text-left py-2 px-2 text-muted-foreground font-medium text-xs">Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              {movements.map((m: any) => (
-                <tr key={m.id} className="border-b last:border-0">
-                  <td className="py-2 px-2 flex items-center gap-1.5">{typeIcon(m.type)} {typeLabel(m.type)}</td>
-                  <td className="py-2 px-2 text-foreground">{m.products?.name || "N/A"}</td>
-                  <td className="py-2 px-2 font-medium text-foreground">{m.quantity}</td>
-                  <td className="py-2 px-2 text-muted-foreground">{m.reason || "N/A"}</td>
-                  <td className="py-2 px-2 text-muted-foreground text-xs">{new Date(m.created_at).toLocaleDateString("pt-BR")}</td>
-                </tr>
-              ))}
-              {movements.length === 0 && (
-                <tr><td colSpan={5} className="py-6 text-center text-muted-foreground">Nenhuma movimentação registrada.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
 
       {/* Movement history - Mobile cards */}
       <div className="md:hidden space-y-2">
@@ -156,9 +244,12 @@ const AdminStockMovements = () => {
 
       {/* Add movement dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display">Nova Movimentação</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-navy-dark tracking-tight">Nova Movimentação</DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              Registre entradas, saídas ou ajustes manuais para atualizar o saldo dos produtos.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -177,9 +268,9 @@ const AdminStockMovements = () => {
               <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="entry">Entrada</SelectItem>
-                  <SelectItem value="exit">Saída</SelectItem>
-                  <SelectItem value="adjustment">Ajuste</SelectItem>
+                  <SelectItem value="entrada">Entrada</SelectItem>
+                  <SelectItem value="saida">Saída</SelectItem>
+                  <SelectItem value="ajuste">Ajuste</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -192,10 +283,14 @@ const AdminStockMovements = () => {
               <Textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={2} placeholder="Ex: Reposição, venda direta..." />
             </div>
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto">Cancelar</Button>
-            <Button className="bg-gold hover:bg-gold-dark text-primary font-semibold w-full sm:w-auto" onClick={() => addMovement.mutate()} disabled={!form.product_id || form.quantity <= 0}>
-              Registrar
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-2">
+            <Button variant="ghost" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto text-gray-400 hover:text-navy-dark">Cancelar</Button>
+            <Button 
+              className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg px-8 shadow-sm transition-all w-full sm:w-auto" 
+              onClick={() => addMovement.mutate()} 
+              disabled={!form.product_id || form.quantity <= 0}
+            >
+              Registrar Movimentação
             </Button>
           </DialogFooter>
         </DialogContent>

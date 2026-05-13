@@ -15,3 +15,18 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// Helper to check for club token on startup
+if (typeof window !== 'undefined') {
+  const clubToken = localStorage.getItem("solidario_club_token");
+  if (clubToken) {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        supabase.auth.setSession({
+          access_token: clubToken,
+          refresh_token: "",
+        });
+      }
+    });
+  }
+}

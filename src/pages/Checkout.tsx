@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ShoppingBag, ArrowLeft, ArrowRight, ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
+import { getClubId, isClubAuthenticated, getClubName } from "@/lib/clubAuth";
 
 import CheckoutHeader from "@/components/checkout/CheckoutHeader";
 import StepReview from "@/components/checkout/StepReview";
@@ -66,6 +67,14 @@ const Checkout = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Check if it's a club session first
+      if (isClubAuthenticated()) {
+        const clubName = getClubName();
+        setCustomerName(clubName || "");
+        setLoading(false);
+        return;
+      }
+
       // getUser() vai ao servidor, sem cache — garante dados frescos de nome/telefone
       const { data: { user: freshUser } } = await supabase.auth.getUser();
       if (!freshUser) { navigate("/login", { state: { redirect: "/checkout" } }); return; }
@@ -130,6 +139,7 @@ const Checkout = () => {
         p_customer_email: user?.email || "", p_customer_phone: rawPhone,
         p_charity_id: selectedCharity || null, p_notes: notes.trim() || null,
         p_coupon_code: appliedCoupon?.code || null,
+        p_club_id: getClubId(),
       });
       if (error) throw error;
       const result = data as any;
@@ -164,14 +174,18 @@ const Checkout = () => {
   // Empty cart
   if (items.length === 0 && !orderComplete) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center">
-          <ShoppingBag className="h-14 w-14 text-muted-foreground/30 mx-auto mb-4" />
-          <h1 className="text-xl font-display font-bold text-foreground mb-2">Carrinho vazio</h1>
-          <p className="text-muted-foreground text-sm mb-6">Adicione produtos antes de finalizar</p>
-          <Link to="/app/produtos">
-            <Button className="bg-gold hover:bg-gold-dark text-primary font-semibold rounded-xl">Ver Produtos</Button>
-          </Link>
+      <main className="min-h-screen bg-gray-50/50 flex items-center justify-center px-4">
+        <div className="text-center space-y-4">
+          <div className="h-16 w-16 bg-white border border-gray-100 rounded-xl flex items-center justify-center mx-auto shadow-sm">
+            <ShoppingBag className="h-8 w-8 text-gray-300" />
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-sm font-bold text-navy-dark uppercase tracking-widest">Carrinho vazio</h1>
+            <p className="text-gray-400 text-[10px] font-medium uppercase tracking-widest">Adicione produtos antes de finalizar</p>
+          </div>
+          <Button asChild className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg h-10 px-8 shadow-sm transition-all active:scale-[0.98]">
+            <Link to="/app/produtos" className="uppercase tracking-widest text-[10px]">Ver Produtos</Link>
+          </Button>
         </div>
       </main>
     );
@@ -194,7 +208,7 @@ const Checkout = () => {
 
   // Checkout steps
   return (
-    <main className="min-h-screen bg-[#FAFAFA] flex flex-col">
+    <main className="min-h-screen bg-gray-50/50 flex flex-col">
       <CheckoutHeader step={step} onBack={() => (step > 0 ? setStep(step - 1) : navigate(-1))} />
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 pt-6 max-w-lg mx-auto w-full">
@@ -231,28 +245,28 @@ const Checkout = () => {
         )}
       </div>
 
-      {/* Fixed bottom action: more professional design */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-stone-100 px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+      {/* Fixed bottom action: professional design */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 px-6 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lg">
         <div className="max-w-lg mx-auto flex items-center justify-between gap-6">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-stone-400">Total</span>
-            <span className="text-2xl font-bold text-stone-900 tracking-tight leading-none mt-1">{fmt(finalTotal)}</span>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Total</span>
+            <span className="text-xl font-bold text-navy-dark tracking-tight leading-none mt-0.5">{fmt(finalTotal)}</span>
           </div>
 
           <div className="flex-1 flex justify-end">
             {step < 3 ? (
               <Button
                 size="lg"
-                className="bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-2xl h-14 px-8 shadow-lg shadow-stone-900/10 transition-all flex items-center gap-2 group w-full max-w-[200px]"
+                className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg h-11 px-8 shadow-sm transition-all flex items-center gap-2 group w-full max-w-[180px]"
                 disabled={!canAdvance()}
                 onClick={() => setStep(step + 1)}
               >
-                Próximo <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                Próximo <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             ) : (
               <Button
                 size="lg"
-                className="bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-2xl h-14 px-8 shadow-lg shadow-stone-900/10 transition-all flex items-center gap-2 w-full max-w-[200px]"
+                className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg h-11 px-8 shadow-sm transition-all flex items-center gap-2 w-full max-w-[180px]"
                 disabled={submitting}
                 onClick={handleSubmit}
               >

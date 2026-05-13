@@ -1,182 +1,154 @@
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  ShoppingBag,
-  Package,
-  BarChart3,
-  Settings,
-  LogOut,
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  Users, 
+  Package, 
+  RotateCcw, 
+  Tag, 
+  Gift, 
+  Heart, 
+  Settings, 
+  Menu, 
   Home,
-  ArrowLeftRight,
-  Ticket,
-  Gift,
-  Heart,
-  Menu,
-  X,
+  LogOut
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// mark manual signout to avoid aggressive auto-redirect
-import { markManualSignOut } from "@/lib/authHelpers";
-
-export type Tab = "dashboard" | "products" | "orders" | "stock" | "coupons" | "combos" | "charities" | "settings";
+type Tab = "dashboard" | "products" | "orders" | "stock" | "coupons" | "combos" | "charities" | "clubs" | "settings";
 
 interface AdminSidebarProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
 }
 
-const tabs = [
-  { id: "dashboard" as Tab, label: "Dashboard", icon: BarChart3 },
-  { id: "products" as Tab, label: "Produtos", icon: Package },
-  { id: "orders" as Tab, label: "Pedidos", icon: ShoppingBag },
-  { id: "stock" as Tab, label: "Estoque", icon: ArrowLeftRight },
-  { id: "coupons" as Tab, label: "Cupons", icon: Ticket },
-  { id: "combos" as Tab, label: "Combos", icon: Gift },
-  { id: "charities" as Tab, label: "Instituições", icon: Heart },
-  { id: "settings" as Tab, label: "Configurações", icon: Settings },
+const tabs: { id: Tab; label: string; icon: any }[] = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "orders", label: "Pedidos", icon: ShoppingBag },
+  { id: "clubs", label: "Clubes", icon: Users },
+  { id: "products", label: "Produtos", icon: Package },
+  { id: "stock", label: "Estoque", icon: RotateCcw },
+  { id: "combos", label: "Combos", icon: Gift },
+  { id: "coupons", label: "Cupons", icon: Tag },
+  { id: "charities", label: "Instituições", icon: Heart },
+  { id: "settings", label: "Configurações", icon: Settings },
 ];
 
-export const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => (
-  <aside className="hidden md:flex flex-col w-64 gradient-navy fixed left-0 top-0 bottom-0 z-30">
-    <div className="p-5 border-b border-primary-foreground/10">
-      <h2 className="text-primary-foreground font-display font-bold text-lg">Painel Admin</h2>
-      <p className="text-primary-foreground/50 text-xs mt-1">Gerencie sua campanha</p>
-    </div>
-    <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-            activeTab === tab.id
-              ? "bg-gold/20 text-gold"
-              : "text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5"
-          }`}
-        >
-          <tab.icon className="h-5 w-5" />
-          {tab.label}
-        </button>
-      ))}
-    </nav>
-    <div className="p-3 space-y-1 border-t border-primary-foreground/10">
-      <Link to="/">
-        <Button variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
-          <Home className="h-4 w-4 mr-2" />
-          Voltar ao Site
-        </Button>
-      </Link>
-      <LogoutButton />
-    </div>
-  </aside>
-);
-
-const LogoutButton = () => {
+export const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    try {
-      markManualSignOut();
-    } catch (e) {
-      // ignore
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Erro ao sair.");
+    } else {
+      navigate("/");
     }
-    try {
-      await supabase.auth.signOut();
-    } catch (e) {
-      // ignore
-    }
-    navigate("/");
   };
 
   return (
-    <Button onClick={handleLogout} variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
-      <LogOut className="h-4 w-4 mr-2" />
-      Sair
-    </Button>
+    <aside className="hidden md:flex flex-col w-64 gradient-navy fixed left-0 top-0 bottom-0 z-30 shadow-2xl">
+      <div className="p-6 border-b border-white/10">
+        <h2 className="text-white font-display font-bold text-xl tracking-tight">Painel Admin</h2>
+        <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">Gestão Centralizada</p>
+      </div>
+      <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              activeTab === tab.id
+                ? "bg-white text-navy-dark shadow-lg translate-x-1"
+                : "text-white/60 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            <tab.icon className={`h-4 w-4 transition-colors ${activeTab === tab.id ? "text-gray-400" : "text-white/40"}`} />
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+      <div className="p-4 border-t border-white/10">
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-white/40 hover:text-white hover:bg-white/5 transition-all"
+        >
+          <LogOut className="h-4 w-4 text-white/40" />
+          Sair do Painel
+        </button>
+      </div>
+    </aside>
   );
 };
 
 export const AdminMobileHeader = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const currentTab = tabs.find((t) => t.id === activeTab);
-
-  const MobileLogout = ({ closeMenu }: { closeMenu: () => void }) => {
-    const navigate = useNavigate();
-    const handleLogout = async () => {
-      try { markManualSignOut(); } catch (e) {}
-      try { await supabase.auth.signOut(); } catch (e) {}
-      closeMenu();
-      navigate("/");
-    };
-    return (
-      <Button onClick={handleLogout} variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
-        <LogOut className="h-4 w-4 mr-2" />
-        Sair
-      </Button>
-    );
-  };
 
   const handleSelect = (tab: Tab) => {
     setActiveTab(tab);
     setOpen(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   return (
     <>
-      {/* Top bar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 gradient-navy border-b border-primary-foreground/10 flex items-center justify-between px-4 h-14">
-        <button onClick={() => setOpen(true)} className="text-primary-foreground p-1">
-          <Menu className="h-6 w-6" />
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 gradient-navy border-b border-white/10 flex items-center justify-between px-4 h-16 shadow-lg">
+        <button onClick={() => setOpen(true)} className="text-white p-2 hover:bg-white/5 rounded-lg transition-colors">
+          <Menu className="h-6 w-6 text-gray-400" />
         </button>
-        <span className="text-primary-foreground font-display font-bold text-sm flex items-center gap-2">
-          {currentTab && <currentTab.icon className="h-4 w-4 text-gold" />}
+        <span className="text-white font-display font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+          {currentTab && <currentTab.icon className="h-4 w-4 text-gray-400" />}
           {currentTab?.label || "Admin"}
         </span>
-        <Link to="/" className="text-primary-foreground/60 text-xs hover:text-primary-foreground">
-          <Home className="h-5 w-5" />
-        </Link>
+        <button onClick={handleLogout} className="text-white/40 p-2 hover:text-white transition-colors">
+          <LogOut className="h-5 w-5 text-gray-400" />
+        </button>
       </header>
 
-      {/* Overlay */}
-      {open && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
-          <aside className="relative w-64 gradient-navy flex flex-col animate-slide-in-left z-10 h-full">
-            <div className="p-4 border-b border-primary-foreground/10 flex items-center justify-between">
-              <h2 className="text-primary-foreground font-display font-bold text-base">Menu</h2>
-              <button onClick={() => setOpen(false)} className="text-primary-foreground/60 hover:text-primary-foreground">
-                <X className="h-5 w-5" />
-              </button>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="left" className="p-0 w-72 bg-navy-dark border-none">
+          <div className="flex flex-col h-full gradient-navy">
+            <div className="p-6 border-b border-white/10">
+              <h2 className="text-white font-display font-bold text-xl tracking-tight">Painel Admin</h2>
             </div>
-            <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+            <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleSelect(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                     activeTab === tab.id
-                      ? "bg-gold/20 text-gold"
-                      : "text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5"
+                      ? "bg-white text-navy-dark shadow-lg"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  <tab.icon className="h-5 w-5 flex-shrink-0" />
+                  <tab.icon className={`h-4 w-4 flex-shrink-0 ${activeTab === tab.id ? "text-gray-400" : "text-white/40"}`} />
                   {tab.label}
                 </button>
               ))}
             </nav>
-            <div className="p-3 space-y-1 border-t border-primary-foreground/10">
-              <Link to="/" onClick={() => setOpen(false)}>
-                <Button variant="ghost" size="sm" className="w-full justify-start text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5">
-                  <Home className="h-4 w-4 mr-2" />
-                  Voltar ao Site
-                </Button>
-              </Link>
-              <MobileLogout closeMenu={() => setOpen(false)} />
+            <div className="p-4 border-t border-white/10">
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-white/40 hover:text-white hover:bg-white/5 transition-all"
+              >
+                <LogOut className="h-4 w-4 text-white/40" />
+                Sair da Conta
+              </button>
             </div>
-          </aside>
-        </div>
-      )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 };

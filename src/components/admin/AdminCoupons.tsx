@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Plus, Trash2, Ticket } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,48 +72,86 @@ const AdminCoupons = () => {
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-display font-bold text-foreground">Cupons de Desconto</h1>
-        <Button size="sm" className="bg-gold hover:bg-gold-dark text-primary font-semibold" onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Novo Cupom
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold text-navy-dark tracking-tight">Cupons de Desconto</h1>
+          <p className="text-xs text-muted-foreground">Gerencie ofertas e promoções para os clientes</p>
+        </div>
+        <Button 
+          size="sm" 
+          className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all" 
+          onClick={() => setDialogOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" /> 
+          Novo Cupom
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {coupons.map((c) => (
-          <Card key={c.id} className={`${!c.active ? "opacity-60" : ""}`}>
+          <Card key={c.id} className={`border-gray-100 shadow-sm hover:shadow-md transition-all ${!c.active ? "opacity-50 grayscale-[0.5]" : ""}`}>
             <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Ticket className="h-5 w-5 text-gold" />
-                  <span className="font-mono font-bold text-foreground text-lg">{c.code}</span>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-gray-50 border border-gray-100">
+                    <Ticket className="h-4 w-4 text-navy-dark/40" />
+                  </div>
+                  <span className="font-mono font-bold text-navy-dark tracking-wider">{c.code}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Switch checked={c.active} onCheckedChange={(v) => toggleCoupon.mutate({ id: c.id, active: v })} />
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteCoupon.mutate(c.id)}>
-                    <Trash2 className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-2">
+                  <Switch checked={c.active} onCheckedChange={(v) => toggleCoupon.mutate({ id: c.id, active: v })} className="data-[state=checked]:bg-navy" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => deleteCoupon.mutate(c.id)}>
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-foreground">
-                {c.discount_type === "percentage" ? `${c.discount_value}%` : `R$ ${Number(c.discount_value).toFixed(2)}`}
-              </p>
-              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                {c.min_order_value && <p>Mín: R$ {Number(c.min_order_value).toFixed(2)}</p>}
-                <p>Usos: {c.used_count}{c.max_uses ? ` / ${c.max_uses}` : " (ilimitado)"}</p>
-                {c.expires_at && <p>Expira: {new Date(c.expires_at).toLocaleDateString("pt-BR")}</p>}
+
+              <div className="mb-6">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Valor do Desconto</p>
+                <p className="text-2xl font-bold text-navy-dark tabular-nums">
+                  {c.discount_type === "percentage" ? `${c.discount_value}%` : `R$ ${Number(c.discount_value).toFixed(2).replace('.', ',')}`}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-3 pt-4 border-t border-gray-50">
+                <div className="space-y-0.5">
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Pedido Mínimo</p>
+                  <p className="text-[11px] font-medium text-navy-dark">
+                    {c.min_order_value ? `R$ ${Number(c.min_order_value).toFixed(2)}` : "Livre"}
+                  </p>
+                </div>
+                <div className="space-y-0.5 text-right">
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Status de Uso</p>
+                  <p className="text-[11px] font-medium text-navy-dark">
+                    {c.used_count}{c.max_uses ? ` / ${c.max_uses}` : " (∞)"}
+                  </p>
+                </div>
+                {c.expires_at && (
+                  <div className="col-span-2 space-y-0.5">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Válido Até</p>
+                    <p className="text-[11px] font-medium text-navy-dark">
+                      {new Date(c.expires_at).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
         {coupons.length === 0 && (
-          <div className="col-span-full py-12 text-center text-muted-foreground">Nenhum cupom cadastrado.</div>
+          <div className="col-span-full py-20 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+            <Ticket className="h-8 w-8 text-gray-200 mx-auto mb-3" />
+            <p className="text-sm text-gray-400 italic">Nenhum cupom ativo no momento.</p>
+          </div>
         )}
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display">Novo Cupom</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-navy-dark tracking-tight">Novo Cupom de Desconto</DialogTitle>
+            <DialogDescription className="text-xs text-gray-400">
+              Crie códigos promocionais para aplicar descontos em compras.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -151,9 +189,13 @@ const AdminCoupons = () => {
               <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button className="bg-gold hover:bg-gold-dark text-primary font-semibold" onClick={() => addCoupon.mutate()} disabled={!form.code || form.discount_value <= 0}>
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+            <Button variant="ghost" onClick={() => setDialogOpen(false)} className="text-gray-400 hover:text-navy-dark">Cancelar</Button>
+            <Button 
+              className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg px-8 shadow-sm transition-all w-full sm:w-auto" 
+              onClick={() => addCoupon.mutate()} 
+              disabled={!form.code || form.discount_value <= 0}
+            >
               Criar Cupom
             </Button>
           </DialogFooter>
