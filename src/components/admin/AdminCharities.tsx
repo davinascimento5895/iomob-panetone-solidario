@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Heart, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -21,7 +20,7 @@ const CHART_COLORS = [
   "hsl(215, 30%, 35%)", // Deep Slate
 ];
 
-const AdminCharities = () => {
+const AdminCharities = ({ readOnly = false }: { readOnly?: boolean }) => {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -97,11 +96,12 @@ const AdminCharities = () => {
   };
 
   // Stats
-  const totalOrdersWithCharity = orders.filter((o) => o.charity_id).length;
-  const totalRevenueWithCharity = orders.filter((o) => o.charity_id).reduce((s, o) => s + Number(o.total), 0);
+  const activeOrders = orders.filter((o) => o.status !== "cancelado");
+  const totalOrdersWithCharity = activeOrders.filter((o) => o.charity_id).length;
+  const totalRevenueWithCharity = activeOrders.filter((o) => o.charity_id).reduce((s, o) => s + Number(o.total), 0);
 
   const charityStats = charities.map((c) => {
-    const cOrders = orders.filter((o) => o.charity_id === c.id);
+    const cOrders = activeOrders.filter((o) => o.charity_id === c.id);
     return {
       name: c.name.length > 15 ? c.name.slice(0, 15) + "…" : c.name,
       fullName: c.name,
@@ -119,14 +119,15 @@ const AdminCharities = () => {
           <h1 className="text-xl font-bold text-navy-dark tracking-tight">Instituições</h1>
           <p className="text-xs text-muted-foreground">Monitore o desempenho e repasses das parcerias</p>
         </div>
-        <Button 
-          size="sm" 
-          className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all" 
-          onClick={openCreate}
-        >
-          <Plus className="h-4 w-4 mr-2" /> 
-          Nova Instituição
-        </Button>
+        {!readOnly && (
+          <Button 
+            size="sm" 
+            className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg h-9 shadow-sm transition-all px-6 uppercase text-[10px] tracking-widest" 
+            onClick={openCreate}
+          >
+            Nova Instituição
+          </Button>
+        )}
       </div>
 
       {/* Stats cards */}
@@ -136,7 +137,6 @@ const AdminCharities = () => {
             <p className="text-[10px] font-medium uppercase tracking-widest opacity-60">Pedidos Beneficentes</p>
             <div className="flex items-center gap-3 mt-1">
               <h2 className="text-2xl font-semibold tabular-nums text-white">{totalOrdersWithCharity}</h2>
-              <Heart className="h-4 w-4 text-white opacity-20" />
             </div>
           </CardContent>
         </Card>
@@ -146,7 +146,6 @@ const AdminCharities = () => {
             <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Valor Arrecadado</p>
             <div className="flex items-center gap-2 mt-1">
               <h2 className="text-2xl font-semibold text-navy-dark tabular-nums">R$ {totalRevenueWithCharity.toFixed(2).replace('.', ',')}</h2>
-              <TrendingUp className="h-4 w-4 text-green-500 opacity-30" />
             </div>
           </CardContent>
         </Card>
@@ -190,16 +189,13 @@ const AdminCharities = () => {
       {/* Charities list */}
       <div className="grid grid-cols-1 gap-4">
         {charities.map((c) => {
-          const cOrders = orders.filter((o) => o.charity_id === c.id);
+          const cOrders = activeOrders.filter((o) => o.charity_id === c.id);
           const cRevenue = cOrders.reduce((s, o) => s + Number(o.total), 0);
           return (
             <Card key={c.id} className={`border-gray-100 shadow-sm hover:shadow-md transition-all ${!c.active ? "opacity-50 grayscale-[0.5]" : ""}`}>
               <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-gray-50 border border-gray-100">
-                      <Heart className="h-4 w-4 text-navy-dark/40" />
-                    </div>
                     <div>
                       <h3 className="font-semibold text-navy-dark tracking-tight">{c.name}</h3>
                       <p className="text-[10px] text-gray-400 mt-0.5 italic line-clamp-1">{c.description || "Sem descrição detalhada"}</p>
@@ -219,31 +215,32 @@ const AdminCharities = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 sm:pt-0 border-t sm:border-none border-gray-50">
-                  <div className="flex items-center gap-2 mr-2">
-                    <span className="text-[10px] font-medium text-gray-400">Ativa</span>
-                    <Switch
-                      checked={c.active}
-                      onCheckedChange={(active) => toggleActive.mutate({ id: c.id, active })}
-                      className="data-[state=checked]:bg-navy"
-                    />
+                {!readOnly && (
+                  <div className="flex items-center gap-3 pt-4 sm:pt-0 border-t sm:border-none border-gray-50">
+                    <div className="flex items-center gap-2 mr-2">
+                      <span className="text-[10px] font-medium text-gray-400">Ativa</span>
+                      <Switch
+                        checked={c.active}
+                        onCheckedChange={(active) => toggleActive.mutate({ id: c.id, active })}
+                        className="data-[state=checked]:bg-navy"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-gray-400 hover:text-navy hover:bg-navy/5 text-[9px] font-bold uppercase" onClick={() => openEdit(c)}>
+                        Editar
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-gray-300 hover:text-red-500 hover:bg-red-50 text-[9px] font-bold uppercase" onClick={() => deleteMutation.mutate(c.id)}>
+                        Excluir
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-navy hover:bg-navy/5" onClick={() => openEdit(c)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-300 hover:text-red-500 hover:bg-red-50" onClick={() => deleteMutation.mutate(c.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           );
         })}
         {charities.length === 0 && (
           <div className="col-span-full py-12 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-            <Heart className="h-8 w-8 text-gray-200 mx-auto mb-3" />
             <p className="text-sm text-gray-400 italic">Nenhuma instituição cadastrada.</p>
           </div>
         )}

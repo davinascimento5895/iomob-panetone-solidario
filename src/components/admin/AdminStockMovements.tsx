@@ -5,13 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, ArrowUpRight, ArrowDownRight, RotateCcw, Search } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const AdminStockMovements = () => {
+const AdminStockMovements = ({ readOnly = false }: { readOnly?: boolean }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [form, setForm] = useState({ product_id: "", type: "entrada", quantity: 1, reason: "" });
@@ -68,7 +67,6 @@ const AdminStockMovements = () => {
   });
 
   const typeLabel = (t: string) => t === "entrada" ? "Entrada" : t === "saida" ? "Saída" : "Ajuste";
-  const typeIcon = (t: string) => t === "entrada" ? <ArrowUpRight className="h-3 w-3" /> : t === "saida" ? <ArrowDownRight className="h-3 w-3" /> : <RotateCcw className="h-3 w-3" />;
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -91,15 +89,15 @@ const AdminStockMovements = () => {
           <h1 className="text-xl font-bold text-navy-dark tracking-tight">Estoque</h1>
           <p className="text-xs text-muted-foreground">Gerenciamento de entrada e saída de produtos</p>
         </div>
-        <Button 
-          size="sm" 
-          className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all" 
-          onClick={() => setDialogOpen(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" /> 
-          <span className="hidden sm:inline">Nova Movimentação</span>
-          <span className="sm:hidden">Novo</span>
-        </Button>
+        {!readOnly && (
+          <Button 
+            size="sm" 
+            className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all px-6" 
+            onClick={() => setDialogOpen(true)}
+          >
+            Nova Movimentação
+          </Button>
+        )}
       </div>
 
       {/* Dashboard Stats */}
@@ -116,7 +114,6 @@ const AdminStockMovements = () => {
             <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Entradas (Hoje)</p>
             <div className="flex items-center gap-2 mt-1">
               <h2 className="text-2xl font-semibold text-navy-dark tabular-nums">+{stats.entriesToday}</h2>
-              <ArrowUpRight className="h-4 w-4 text-green-500 opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -126,7 +123,6 @@ const AdminStockMovements = () => {
             <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Saídas (Hoje)</p>
             <div className="flex items-center gap-2 mt-1">
               <h2 className="text-2xl font-semibold text-navy-dark tabular-nums">-{stats.exitsToday}</h2>
-              <ArrowDownRight className="h-4 w-4 text-red-400 opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -136,10 +132,9 @@ const AdminStockMovements = () => {
         {/* Left Column: Product Search & List */}
         <div className="lg:col-span-4 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input 
               placeholder="Buscar produto..." 
-              className="pl-9 h-10 border-gray-100 bg-white shadow-sm text-sm"
+              className="h-10 border-gray-100 bg-white shadow-sm text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -173,7 +168,6 @@ const AdminStockMovements = () => {
           <Card className="border-gray-100 shadow-sm overflow-hidden h-full">
             <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-3 flex flex-row items-center justify-between">
               <CardTitle className="text-xs font-bold text-navy-dark/60 uppercase tracking-widest">Atividade Recente</CardTitle>
-              <RotateCcw className="h-3 w-3 text-gray-300" />
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -195,7 +189,7 @@ const AdminStockMovements = () => {
                             m.type === 'entrada' ? 'bg-green-50 text-green-700' : 
                             m.type === 'saida' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'
                           }`}>
-                            {typeIcon(m.type)} {typeLabel(m.type)}
+                            {typeLabel(m.type)}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-navy-dark font-medium text-xs">{m.products?.name || "N/A"}</td>
@@ -223,7 +217,6 @@ const AdminStockMovements = () => {
             <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
-                  {typeIcon(m.type)}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{m.products?.name || "N/A"}</p>
                     <p className="text-xs text-muted-foreground">{m.reason || "Sem motivo"}</p>

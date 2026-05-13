@@ -6,12 +6,11 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Ticket } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const AdminCoupons = () => {
+const AdminCoupons = ({ readOnly = false }: { readOnly?: boolean }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({
     code: "",
@@ -76,14 +75,15 @@ const AdminCoupons = () => {
           <h1 className="text-xl font-bold text-navy-dark tracking-tight">Cupons de Desconto</h1>
           <p className="text-xs text-muted-foreground">Gerencie ofertas e promoções para os clientes</p>
         </div>
-        <Button 
-          size="sm" 
-          className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all" 
-          onClick={() => setDialogOpen(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" /> 
-          Novo Cupom
-        </Button>
+        {!readOnly && (
+          <Button 
+            size="sm" 
+            className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg h-9 shadow-sm transition-all px-6 uppercase text-[10px] tracking-widest" 
+            onClick={() => setDialogOpen(true)}
+          >
+            Novo Cupom
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -92,16 +92,17 @@ const AdminCoupons = () => {
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-gray-50 border border-gray-100">
-                    <Ticket className="h-4 w-4 text-navy-dark/40" />
-                  </div>
                   <span className="font-mono font-bold text-navy-dark tracking-wider">{c.code}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch checked={c.active} onCheckedChange={(v) => toggleCoupon.mutate({ id: c.id, active: v })} className="data-[state=checked]:bg-navy" />
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => deleteCoupon.mutate(c.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {!readOnly && (
+                    <>
+                      <Switch checked={c.active} onCheckedChange={(v) => toggleCoupon.mutate({ id: c.id, active: v })} className="data-[state=checked]:bg-navy" />
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors text-[9px] font-bold uppercase" onClick={() => deleteCoupon.mutate(c.id)}>
+                        Excluir
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -139,7 +140,6 @@ const AdminCoupons = () => {
         ))}
         {coupons.length === 0 && (
           <div className="col-span-full py-20 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-            <Ticket className="h-8 w-8 text-gray-200 mx-auto mb-3" />
             <p className="text-sm text-gray-400 italic">Nenhum cupom ativo no momento.</p>
           </div>
         )}

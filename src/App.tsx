@@ -12,6 +12,7 @@ import { CartProvider } from "./contexts/CartContext";
 const Navbar = lazy(() => import("./components/Navbar"));
 const Footer = lazy(() => import("./components/Footer"));
 import AdminRoute from "./components/AdminRoute";
+import StaffRoute from "./components/StaffRoute";
 import ModeratorRoute from "./components/ModeratorRoute";
 // Authenticated layout and app pages are lazy-loaded to avoid
 // bundling the entire authenticated area into the initial chunk.
@@ -69,8 +70,11 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const StaffLogin = lazy(() => import("./pages/StaffLogin"));
+const StaffInvite = lazy(() => import("./pages/StaffInvite"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Staff = lazy(() => import("./pages/Staff"));
 const Moderator = lazy(() => import("./pages/Moderator"));
 const ModeratorProfile = lazy(() => import("./pages/ModeratorProfile"));
 const Checkout = lazy(() => import("./pages/Checkout"));
@@ -210,6 +214,8 @@ const AppLayout = () => {
           </>} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/login/equipe" element={<StaffLogin />} />
+          <Route path="/invite/staff/:token" element={<StaffInvite />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route
             path="/checkout"
@@ -231,6 +237,19 @@ const AppLayout = () => {
                   <AdminRoute>
                     <Admin />
                   </AdminRoute>
+                </ProductProvider>
+              </QueryClientProvider>
+            }
+          />
+
+          <Route
+            path="/equipe"
+            element={
+              <QueryClientProvider client={queryClient}>
+                <ProductProvider>
+                  <StaffRoute>
+                    <Staff />
+                  </StaffRoute>
                 </ProductProvider>
               </QueryClientProvider>
             }

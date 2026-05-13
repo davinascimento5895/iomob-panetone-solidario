@@ -140,6 +140,7 @@ const Checkout = () => {
         p_charity_id: selectedCharity || null, p_notes: notes.trim() || null,
         p_coupon_code: appliedCoupon?.code || null,
         p_club_id: getClubId(),
+        p_payment_method: paymentMethod,
       });
       if (error) throw error;
       const result = data as any;

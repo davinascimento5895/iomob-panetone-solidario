@@ -7,7 +7,6 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Gift, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -149,10 +148,9 @@ const AdminCombos = () => {
         </div>
         <Button 
           size="sm" 
-          className="bg-navy hover:bg-navy-dark text-white font-medium rounded-lg h-9 shadow-sm transition-all" 
+          className="bg-navy hover:bg-navy-dark text-white font-bold rounded-lg h-9 shadow-sm transition-all px-6 uppercase text-[10px] tracking-widest" 
           onClick={() => setDialogOpen(true)}
         >
-          <Plus className="h-4 w-4 mr-2" /> 
           Novo Combo
         </Button>
       </div>
@@ -163,15 +161,12 @@ const AdminCombos = () => {
             <CardContent className="p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-gray-50 border border-gray-100">
-                    <Gift className="h-4 w-4 text-navy-dark/40" />
-                  </div>
                   <span className="font-semibold text-navy-dark tracking-tight">{combo.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch checked={combo.active} onCheckedChange={(v) => toggleCombo.mutate({ id: combo.id, active: v })} className="data-[state=checked]:bg-navy" />
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" onClick={() => deleteCombo.mutate(combo.id)}>
-                    <Trash2 className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors text-[9px] font-bold uppercase" onClick={() => deleteCombo.mutate(combo.id)}>
+                    Excluir
                   </Button>
                 </div>
               </div>
@@ -202,7 +197,6 @@ const AdminCombos = () => {
         ))}
         {combos.length === 0 && (
           <div className="col-span-full py-20 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-            <Gift className="h-8 w-8 text-gray-200 mx-auto mb-3" />
             <p className="text-sm text-gray-400 italic">Nenhum combo cadastrado até o momento.</p>
           </div>
         )}
@@ -233,8 +227,8 @@ const AdminCombos = () => {
                 {form.items.map((item, i) => (
                   <div key={i} className="flex items-center gap-2 bg-white border border-gray-100 rounded-lg px-3 py-2 text-xs shadow-sm">
                     <span className="flex-1 font-medium text-navy-dark">{item.quantity}x {getProductName(item.product_id)}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-red-500" onClick={() => removeItem(i)}>
-                      <X className="h-3 w-3" />
+                    <Button variant="ghost" size="sm" className="h-6 px-1 text-gray-300 hover:text-red-500 text-[9px] font-bold uppercase" onClick={() => removeItem(i)}>
+                      Remover
                     </Button>
                   </div>
                 ))}
@@ -247,8 +241,8 @@ const AdminCombos = () => {
                   </SelectContent>
                 </Select>
                 <Input type="number" min={1} className="w-16 h-9 bg-white border-gray-200 text-xs text-center" value={newItem.quantity} onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })} />
-                <Button variant="outline" size="sm" className="h-9 w-9 bg-white border-gray-200 text-navy hover:bg-navy hover:text-white transition-all" onClick={addItem}>
-                  <Plus className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="h-9 px-4 bg-white border-gray-200 text-navy hover:bg-navy hover:text-white transition-all text-[10px] font-bold uppercase" onClick={addItem}>
+                  Adicionar
                 </Button>
               </div>
             </div>

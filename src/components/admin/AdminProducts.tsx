@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Package, Search } from "lucide-react";
 import { useProducts, Product } from "@/contexts/ProductContext";
 import { toast } from "sonner";
 import ProductEditDialog from "./ProductEditDialog";
@@ -19,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const AdminProducts = () => {
+const AdminProducts = ({ readOnly = false }: { readOnly?: boolean }) => {
   const { products, updateProduct, addProduct, deleteProduct } = useProducts();
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -39,21 +38,21 @@ const AdminProducts = () => {
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Buscar produto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-white border-gray-100 rounded-xl shadow-sm pl-10 h-11 text-sm"
+              className="bg-white border-gray-100 rounded-xl shadow-sm h-11 text-sm"
             />
           </div>
-          <Button 
-            className="bg-navy hover:bg-navy-dark text-white font-bold rounded-xl h-11 px-6 shadow-sm gap-2" 
-            onClick={() => setAddOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Novo Produto</span>
-          </Button>
+          {!readOnly && (
+            <Button 
+              className="bg-navy hover:bg-navy-dark text-white font-bold rounded-xl h-11 px-8 shadow-sm gap-2 uppercase text-[10px] tracking-widest" 
+              onClick={() => setAddOpen(true)}
+            >
+              Novo Produto
+            </Button>
+          )}
         </div>
       </div>
 
@@ -77,8 +76,8 @@ const AdminProducts = () => {
                     {product.image ? (
                       <img src={product.image} alt={product.name} className="w-12 h-12 rounded-xl object-contain bg-gray-50 p-1 border border-gray-100" />
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
-                        <Package className="h-5 w-5 text-gray-300" />
+                      <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 text-[10px] font-bold text-gray-300">
+                        SEM FOTO
                       </div>
                     )}
                   </td>
@@ -102,24 +101,26 @@ const AdminProducts = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-xl hover:bg-navy/5 text-gray-400 hover:text-navy transition-all" 
-                        onClick={() => setEditProduct(product)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-600 transition-all" 
-                        onClick={() => setDeleteId(product.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {!readOnly && (
+                      <div className="flex items-center justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-9 px-3 rounded-xl hover:bg-navy/5 text-gray-400 hover:text-navy transition-all text-[10px] font-bold uppercase" 
+                          onClick={() => setEditProduct(product)}
+                        >
+                          Editar
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-9 px-3 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-600 transition-all text-[10px] font-bold uppercase" 
+                          onClick={() => setDeleteId(product.id)}
+                        >
+                          Excluir
+                        </Button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

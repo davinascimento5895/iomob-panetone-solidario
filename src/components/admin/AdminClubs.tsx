@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Eye, EyeOff, RotateCcw, Search, Users, ShieldCheck, ShieldAlert } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -81,12 +80,11 @@ const AdminClubs = () => {
           <p className="text-sm text-gray-500 mt-1">Gerenciamento de acessos institucionais</p>
         </div>
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Buscar por nome do clube..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-100 rounded-xl shadow-sm pl-10 h-11 text-sm transition-all focus:ring-navy"
+            className="bg-white border-gray-100 rounded-xl shadow-sm h-11 text-sm transition-all focus:ring-navy"
           />
         </div>
       </div>
@@ -94,8 +92,8 @@ const AdminClubs = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <Card className="border-gray-100 shadow-sm rounded-2xl overflow-hidden">
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-navy/5">
-              <Users className="h-6 w-6 text-navy" />
+            <div className="p-3 rounded-xl bg-navy/5 text-[10px] font-bold text-navy uppercase">
+              QTY
             </div>
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total de Clubes</p>
@@ -105,8 +103,8 @@ const AdminClubs = () => {
         </Card>
         <Card className="border-gray-100 shadow-sm rounded-2xl overflow-hidden">
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-green-50">
-              <ShieldCheck className="h-6 w-6 text-green-600" />
+            <div className="p-3 rounded-xl bg-green-50 text-[10px] font-bold text-green-600 uppercase">
+              ACT
             </div>
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Acessos Ativos</p>
@@ -116,8 +114,8 @@ const AdminClubs = () => {
         </Card>
         <Card className="border-gray-100 shadow-sm rounded-2xl overflow-hidden">
           <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-gold/5">
-              <ShieldAlert className="h-6 w-6 text-gold" />
+            <div className="p-3 rounded-xl bg-gold/5 text-[10px] font-bold text-gold uppercase">
+              HLD
             </div>
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pendentes</p>
@@ -161,9 +159,9 @@ const AdminClubs = () => {
                         </code>
                         <button 
                           onClick={() => setShowPasswords(prev => ({ ...prev, [club.id]: !prev[club.id] }))}
-                          className="p-1 hover:bg-gray-100 rounded transition-colors text-gray-400"
+                          className="p-1 hover:bg-gray-100 rounded transition-colors text-[9px] font-bold text-gray-400 uppercase"
                         >
-                          {showPasswords[club.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showPasswords[club.id] ? "Esconder" : "Ver"}
                         </button>
                       </div>
                     </td>
@@ -189,7 +187,7 @@ const AdminClubs = () => {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold text-gray-400 hover:text-navy uppercase tracking-widest gap-2">
-                            <RotateCcw className="h-3 w-3" /> Resetar
+                            Resetar
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent className="rounded-2xl border-gray-100 shadow-2xl">
