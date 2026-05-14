@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Heart } from "lucide-react";
 import heroJpg from "@/assets/hero-panettone.jpg";
 import heroAvif480 from "@/assets/hero-panettone-480.avif";
 import heroAvif768 from "@/assets/hero-panettone-768.avif";
@@ -13,45 +12,64 @@ import heroWebp1600 from "@/assets/hero-panettone-1600.webp";
 
 const HeroSection = () => {
   return (
-    <section className="py-12 bg-navy-dark text-cream">
-      <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-6">
-        <div className="w-full lg:w-1/2">
-          <h1 className="text-3xl font-display font-bold">Panetone Solidário</h1>
-          <p className="mt-3 text-sm text-cream/90 max-w-lg">Ao comprar um panetone, você ajuda projetos locais do Rotary. Escolha com calma e finalize seu pedido com segurança.</p>
+    <section className="relative py-16 lg:py-24 bg-navy-dark text-cream overflow-hidden">
+      {/* Efeito sutil de iluminação no fundo */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_30%,rgba(148,124,78,0.05),transparent)] pointer-events-none" />
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-12 xl:gap-20">
+          <div className="w-full lg:w-1/2 space-y-6">
+            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-display font-bold tracking-tight leading-[1.1] text-cream">
+              Panetone Solidário
+            </h1>
+            <p className="text-lg text-cream/90 max-w-lg leading-relaxed antialiased">
+              Ao comprar um panetone, você ajuda projetos locais do Rotary. 
+              Escolha com calma e finalize seu pedido com segurança.
+            </p>
 
-          <div className="mt-4 flex gap-3">
-            <Link to="/app/produtos">
-              <Button className="px-6 h-10 font-semibold">Ver Produtos</Button>
-            </Link>
-            <button
-              onClick={() => document.getElementById("sobre")?.scrollIntoView({ behavior: "smooth" })}
-              className="px-4 h-10 rounded-md bg-navy text-cream/90 border border-navy/80"
-            >
-              Saiba Mais
-            </button>
+            <div className="flex flex-wrap gap-4 pt-2">
+              <Link to="/app/produtos">
+                <Button 
+                  size="lg" 
+                  className="bg-gold hover:bg-gold-dark text-navy-dark px-8 h-12 text-base font-semibold transition-all active:scale-95 shadow-lg shadow-gold/10"
+                >
+                  Ver Produtos
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => document.getElementById("sobre")?.scrollIntoView({ behavior: "smooth" })}
+                className="bg-navy/40 border-cream/30 text-cream hover:bg-navy/60 px-8 h-12 text-base font-medium backdrop-blur-sm transition-all"
+              >
+                Saiba Mais
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div className="w-full lg:w-1/2">
-          <picture>
-            <source
-              type="image/avif"
-              srcSet={`${heroAvif480} 480w, ${heroAvif768} 768w, ${heroAvif1024} 1024w, ${heroAvif1600} 1600w`}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            <source
-              type="image/webp"
-              srcSet={`${heroWebp480} 480w, ${heroWebp768} 768w, ${heroWebp1024} 1024w, ${heroWebp1600} 1600w`}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-            <img
-              src={heroJpg}
-              alt="Panetone"
-              decoding="async"
-              fetchpriority="high"
-              className="w-full h-44 object-cover rounded-md"
-            />
-          </picture>
+          <div className="w-full lg:w-1/2">
+            <div className="relative group">
+              <picture className="relative block">
+                <source
+                  type="image/avif"
+                  srcSet={`${heroAvif480} 480w, ${heroAvif768} 768w, ${heroAvif1024} 1024w, ${heroAvif1600} 1600w`}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+                <source
+                  type="image/webp"
+                  srcSet={`${heroWebp480} 480w, ${heroWebp768} 768w, ${heroWebp1024} 1024w, ${heroWebp1600} 1600w`}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+                <img
+                  src={heroJpg}
+                  alt="Panetone"
+                  decoding="async"
+                  fetchpriority="high"
+                  className="w-full h-[300px] lg:h-[420px] object-cover rounded-2xl shadow-2xl shadow-black/40 border border-cream/10"
+                />
+              </picture>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -59,3 +77,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+

@@ -75,11 +75,10 @@ const Navbar = () => {
               <button
                 key={link.href}
                 onClick={() => handleNavClick(link)}
-                className={`text-sm px-3 py-1.5 rounded-lg transition-colors duration-150 font-medium ${
-                  isLinkActive(link)
+                className={`text-sm px-3 py-1.5 rounded-lg transition-colors duration-150 font-medium ${isLinkActive(link)
                     ? "text-gold-dark bg-gold/10"
                     : "text-navy-dark/55 hover:text-navy-dark hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 {link.label}
               </button>
@@ -157,11 +156,10 @@ const Navbar = () => {
                 <button
                   key={link.href}
                   onClick={() => handleNavClick(link)}
-                  className={`text-left text-sm font-medium px-3 py-3 rounded-xl transition-colors ${
-                    isLinkActive(link)
+                  className={`text-left text-sm font-medium px-3 py-3 rounded-xl transition-colors ${isLinkActive(link)
                       ? "text-gold-dark bg-gold/8"
                       : "text-navy-dark/70 hover:text-navy-dark hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </button>

@@ -71,6 +71,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const StaffLogin = lazy(() => import("./pages/StaffLogin"));
+const AdminSignup = lazy(() => import("./pages/AdminSignup"));
 const StaffInvite = lazy(() => import("./pages/StaffInvite"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -149,7 +150,7 @@ const AuthRedirector = () => {
         // subscribe to auth changes (SIGNED_IN covers magic-link / oauth)
         const sub = supabase.auth.onAuthStateChange((_event, session) => {
           if (!session) return;
-          
+
           // Decode JWT to check for club role
           try {
             const payload = JSON.parse(atob(session.access_token.split('.')[1]));
@@ -195,7 +196,8 @@ const AppLayout = () => {
   const isAdmin = location.pathname.startsWith("/admin");
   const isModerator = location.pathname.startsWith("/moderator");
   const isApp = location.pathname.startsWith("/app");
-  const hideChrome = isAdmin || isApp || isModerator || location.pathname === "/checkout";
+  const isLogin = location.pathname.startsWith("/login");
+  const hideChrome = isAdmin || isApp || isModerator || isLogin || location.pathname === "/checkout";
 
   return (
     <>
@@ -214,6 +216,7 @@ const AppLayout = () => {
           </>} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/signup" element={<AdminSignup />} />
           <Route path="/login/equipe" element={<StaffLogin />} />
           <Route path="/invite/staff/:token" element={<StaffInvite />} />
           <Route path="/change-password" element={<ChangePassword />} />
@@ -346,5 +349,6 @@ try {
 } catch (e) {
   // ignore
 }
+
 
 export default App;
